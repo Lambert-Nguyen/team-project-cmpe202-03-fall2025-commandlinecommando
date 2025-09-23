@@ -548,7 +548,7 @@ eyJhbGciOiJIUzUxMiJ9.eyJ0b2tlblR5cGUiOiJyZWZyZXNoIiwidXNlcklkIjoxLCJzdWIiOiJzdHV
 
 ---
 
-## 🔬 Testing Scenarios
+## Testing Scenarios
 
 ### **Positive Test Cases**
 
@@ -626,29 +626,7 @@ mvn test -Dtest=RoleBasedAccessTest # Role-based access tests (17 tests)
 
 ---
 
-## Test Coverage
-
-### **Unit Tests: 46/46 ✅ (100% Pass Rate)**
-
-| Test Suite | Tests | Status | Coverage |
-|------------|-------|--------|----------|
-| **JwtUtilTest** | 6/6 ✅ | PASSING | Token generation, validation, expiration |
-| **AuthServiceTest** | 11/11 ✅ | PASSING | Login, refresh, logout, error scenarios |
-| **AuthControllerTest** | 12/12 ✅ | PASSING | HTTP endpoints, validation, responses |
-| **RoleBasedAccessTest** | 17/17 ✅ | PASSING | RBAC, cross-role access, unauthorized access |
-
-### **Integration Tests: 23/23 ✅ (100% Pass Rate)**
-
-| Category | Tests | Status |
-|----------|-------|--------|
-| **Authentication Endpoints** | 6/6 ✅ | All auth flows working |
-| **Authorization Endpoints** | 4/4 ✅ | Role-based access enforced |
-| **Error Handling** | 5/5 ✅ | Proper error responses |
-| **Security Features** | 8/8 ✅ | JWT, RBAC, validation working |
-
----
-
-## 🔧 Configuration
+## Configuration
 
 ### **JWT Configuration** (`application.properties`)
 ```properties
@@ -682,7 +660,7 @@ spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5432/campusmark
 
 ---
 
-### **🎯 Key Features**
+### ** Key Features**
 - **JWT Authentication** with HS512 signing
 - **Refresh Token Management** with 7-day expiration
 - **Role-Based Authorization** with Student/Admin separation
