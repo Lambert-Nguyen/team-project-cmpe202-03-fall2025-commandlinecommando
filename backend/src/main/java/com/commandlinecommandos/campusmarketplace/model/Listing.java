@@ -1,37 +1,230 @@
 package com.commandlinecommandos.campusmarketplace.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 @Entity
-@Data
 @Table(name = "listings")
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long listingId;
     
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
     
-    @Column(nullable = false)
+    @Size(min = 2, max = 255)
+    @Column(name = "title", nullable = false)
     private String title;
     
-    @Column(columnDefinition = "TEXT")
+    @Size(min = 10, max = 1000)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private Category category;
+
+    @Column(name = "price", nullable = false)
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "condition", nullable = false)
+    private ItemCondition condition;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ListingStatus status;
+
+    @Column(name = "location", nullable = false)
+    private String location;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "view_count", nullable = false)
+    private int viewCount;
+
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ListingImage> images;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
     
-    @Column(nullable = false)
-    private float price;
+    public Listing() {
+    }
+
+    public Listing(String title, String description, BigDecimal price, Category category, ItemCondition condition, String location, User seller) {
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.category = category;
+        this.condition = condition;
+        this.status = ListingStatus.ACTIVE;
+        this.location = location;
+        this.seller = seller;
+        this.viewCount = 0;
+        this.images = new ArrayList<>();
+    }
+
+    public Listing(String title, String description, BigDecimal price, Category category, ItemCondition condition,
+            String location, User seller, List<ListingImage> images) {
+        this(title, description, price, category, condition, location, seller);
+        this.images = images;
+    }
+
+    public Long getListingId() {
+        return listingId;
+    }
+
+    public void setListingId(Long listingId) {
+        this.listingId = listingId;
+    }
+
+    public User getSeller() {
+        return seller;
+    }
+
+    public void setSeller(User seller) {
+        this.seller = seller;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Category category;
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
     
-    @Column(name = "is_active")
-    private boolean isActive = true;
+    public ItemCondition getCondition() {
+        return condition;
+    }
+
+    public void setCondition(ItemCondition condition) {
+        this.condition = condition;
+    }
+    
+    public ListingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ListingStatus status) {
+        this.status = status;
+    }
+
+    public void markAsSold() {
+        setStatus(ListingStatus.SOLD);
+    }
+    
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public void incrementViewCount() {
+        if (getStatus() == ListingStatus.ACTIVE) {
+            setViewCount(getViewCount() + 1);
+        }
+    }
+    
+    public List<ListingImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ListingImage> images) {
+        this.images = images;
+    }
+
+    public void addImage(ListingImage image) {
+        this.images.add(image);
+        image.setListing(this);
+    }
+
+    public void addImages(List<ListingImage> images) {
+        for (ListingImage image : images) {
+            addImage(image);
+        }
+    }
+
+    public void removeImage(ListingImage image) {
+        this.images.remove(image);
+        image.setListing(null);
+    }
+
+    public void removeImages(List<ListingImage> images) {
+        for (ListingImage image : images) {
+            removeImage(image);
+        }
+    }
 }
