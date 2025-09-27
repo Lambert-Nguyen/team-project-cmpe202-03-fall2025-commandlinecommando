@@ -1,9 +1,9 @@
-package com.commandlinecommandos.campusmarketplace.service;
+package com.commandlinecommandos.listingapi.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.commandlinecommandos.campusmarketplace.repository.ListingRepository;
+import com.commandlinecommandos.listingapi.repository.ListingRepository;
 
 @Service
 public class ListingService {

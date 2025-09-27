@@ -1,4 +1,4 @@
-package com.commandlinecommandos.campusmarketplace.model;
+package com.commandlinecommandos.listingapi.model;
 
 public enum ListingStatus {
     PENDING,

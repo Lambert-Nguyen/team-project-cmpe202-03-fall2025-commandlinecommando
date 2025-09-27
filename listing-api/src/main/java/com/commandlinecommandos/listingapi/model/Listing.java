@@ -1,4 +1,4 @@
-package com.commandlinecommandos.campusmarketplace.model;
+package com.commandlinecommandos.listingapi.model;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -17,9 +17,8 @@ public class Listing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long listingId;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private User seller;
+    @Column(name = "seller_id", nullable = false)
+    private Long sellerId;
     
     @Size(min = 2, max = 255)
     @Column(name = "title", nullable = false)
@@ -73,7 +72,8 @@ public class Listing {
     public Listing() {
     }
 
-    public Listing(String title, String description, BigDecimal price, Category category, ItemCondition condition, String location, User seller) {
+    public Listing(String title, String description, BigDecimal price, Category category,
+            ItemCondition condition, String location, Long sellerId) {
         this.title = title;
         this.description = description;
         this.price = price;
@@ -81,14 +81,14 @@ public class Listing {
         this.condition = condition;
         this.status = ListingStatus.ACTIVE;
         this.location = location;
-        this.seller = seller;
+        this.sellerId = sellerId;
         this.viewCount = 0;
         this.images = new ArrayList<>();
     }
 
     public Listing(String title, String description, BigDecimal price, Category category, ItemCondition condition,
-            String location, User seller, List<ListingImage> images) {
-        this(title, description, price, category, condition, location, seller);
+            String location, Long sellerId, List<ListingImage> images) {
+        this(title, description, price, category, condition, location, sellerId);
         this.images = images;
     }
 
@@ -100,12 +100,12 @@ public class Listing {
         this.listingId = listingId;
     }
 
-    public User getSeller() {
-        return seller;
+    public Long getSellerId() {
+        return sellerId;
     }
 
-    public void setSeller(User seller) {
-        this.seller = seller;
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
     }
 
     public String getTitle() {

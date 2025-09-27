@@ -1,10 +1,11 @@
-package com.commandlinecommandos.campusmarketplace.repository;
+package com.commandlinecommandos.listingapi.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.commandlinecommandos.campusmarketplace.model.ListingImage;
-import com.commandlinecommandos.campusmarketplace.model.Listing;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import com.commandlinecommandos.listingapi.model.ListingImage;
+import com.commandlinecommandos.listingapi.model.Listing;
 import java.util.List;
 import java.util.Optional;
 

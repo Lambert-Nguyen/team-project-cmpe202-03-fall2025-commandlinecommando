@@ -1,28 +1,27 @@
-package com.commandlinecommandos.campusmarketplace.repository;
+package com.commandlinecommandos.listingapi.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.commandlinecommandos.campusmarketplace.model.Listing;
-import com.commandlinecommandos.campusmarketplace.model.User;
+import com.commandlinecommandos.listingapi.model.Listing;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import com.commandlinecommandos.campusmarketplace.model.*;
+import com.commandlinecommandos.listingapi.model.*;
 import java.math.BigDecimal;
 
 @Repository
 public interface ListingRepository extends JpaRepository<Listing, Long> {
 
-    Optional<Page<Listing>> findBySeller(User seller, Pageable pageable);
+    Optional<Page<Listing>> findBySellerId(Long sellerId, Pageable pageable);
 
     Optional<Page<Listing>> findByCategory(Category category, Pageable pageable);
 
     Optional<Page<Listing>> findByStatus(ListingStatus status, Pageable pageable);
 
-    Optional<Page<Listing>> findBySellerAndStatus(User seller, ListingStatus status, Pageable pageable);
+    Optional<Page<Listing>> findBySellerIdAndStatus(Long sellerId, ListingStatus status, Pageable pageable);
     
     @Query("SELECT l FROM Listing l WHERE l.title LIKE %:keyword% OR l.description LIKE %:keyword%")
     Optional<Page<Listing>> findByTitleOrDescriptionContaining(String keyword, Pageable pageable);
@@ -39,7 +38,7 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
             @Param("minPrice") BigDecimal minPrice, @Param("maxPrice") BigDecimal maxPrice,
             @Param("location") String location, Pageable pageable);
 
-    @Query("SELECT COUNT(l) FROM Listing l WHERE l.seller = :seller AND l.status = :status")
-    Long countBySellerAndStatus(@Param("seller") User seller, @Param("status") ListingStatus status);
+    @Query("SELECT COUNT(l) FROM Listing l WHERE l.sellerId = :sellerId AND l.status = :status")
+    Long countBySellerIdAndStatus(@Param("sellerId") Long sellerId, @Param("status") ListingStatus status);
     
 }

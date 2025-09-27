@@ -1,4 +1,4 @@
-package com.commandlinecommandos.campusmarketplace.controller;
+package com.commandlinecommandos.listingapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.commandlinecommandos.campusmarketplace.service.FileStorageService;
+import com.commandlinecommandos.listingapi.service.FileStorageService;
 
 @RestController
 @RequestMapping("/api/files")
