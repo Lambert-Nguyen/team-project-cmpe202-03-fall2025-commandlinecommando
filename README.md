@@ -1,25 +1,29 @@
+## 👥 Team - Commandline Commandos
 # Campus Marketplace - CMPE-202 Project
 
 A full-stack campus marketplace application built with Spring Boot backend and React frontend, featuring JWT authentication, role-based access control, and PostgreSQL database.
 
 ---
 
-## 👥 Team
+## 🔗 Links
 
-**Commandline Commandos**
+- **Project Journal:**
+- **Team Jira Board:**
+
+### Key Contribution Area Per Member
 - **Vineet Kumar** - Authentication & Authorization Backend System
-  - 1. Authentication and Authorization Backend System
-  - 2. UML Diagram Design for Authentication and Authorization System
-  - 3. API Development for Registration, Login, Validate Token, Refresh Token, User Info and Logout functionality
-  - 4. Unit tests for Authentication and Authorization module
-  - 5. Initial Postgres database SQL schema model files to setup database across different systems and seed sample data
-- **Sakshat Patil** - [Contribution area to be added]
-- **Wilson Huang** - [Contribution area to be added]
-- **Lam Nguyen** - [Contribution area to be added]
+    1. Authentication and Authorization Backend System
+    2. UML Diagram Design for Authentication and Authorization System
+    3. API Development for Registration, Login, Validate Token, Refresh Token, User Info and Logout functionality
+    4. Unit tests for Authentication and Authorization module
+    5. Initial Postgres database SQL schema model files to setup database across different systems and seed sample data
+- **Sakshat Patil** - 
+- **Wilson Huang** - 
+- **Lam Nguyen** - 
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Project Quick Start
 
 ### **Prerequisites**
 - Java 21+
@@ -205,9 +209,3 @@ cd frontend && npm run build
 This project is part of CMPE-202 coursework at San Jose State University.
 
 ---
-
-## 🔗 Links
-
-- **Project Journal:** [To be added]
-- **Team Jira Board:** [To be added]
-- **GitHub Repository:** [Current repository]
