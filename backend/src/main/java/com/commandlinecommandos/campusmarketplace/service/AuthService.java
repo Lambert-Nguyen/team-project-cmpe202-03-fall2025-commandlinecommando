@@ -13,8 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.commandlinecommandos.campusmarketplace.dto.AuthRequest;
 import com.commandlinecommandos.campusmarketplace.dto.AuthResponse;
 import com.commandlinecommandos.campusmarketplace.dto.RefreshTokenRequest;
+import com.commandlinecommandos.campusmarketplace.dto.RegisterRequest;
 import com.commandlinecommandos.campusmarketplace.model.RefreshToken;
 import com.commandlinecommandos.campusmarketplace.model.User;
+import com.commandlinecommandos.campusmarketplace.model.Student;
+import com.commandlinecommandos.campusmarketplace.model.Admin;
+import com.commandlinecommandos.campusmarketplace.model.AdminLevel;
+import com.commandlinecommandos.campusmarketplace.model.UserRole;
 import com.commandlinecommandos.campusmarketplace.repository.RefreshTokenRepository;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.security.JwtUtil;
@@ -156,5 +161,79 @@ public class AuthService {
     // Cleanup expired tokens (can be called by scheduled task)
     public void cleanupExpiredTokens() {
         refreshTokenRepository.deleteExpiredTokens();
+    }
+    
+    public AuthResponse register(RegisterRequest registerRequest) {
+        // Check if username already exists
+        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
+            throw new BadCredentialsException("Username already exists");
+        }
+        
+        // Check if email already exists
+        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            throw new BadCredentialsException("Email already exists");
+        }
+        
+        // Create user based on role
+        User user;
+        if (registerRequest.getRole() == UserRole.STUDENT) {
+            Student student = new Student();
+            student.setUsername(registerRequest.getUsername());
+            student.setEmail(registerRequest.getEmail());
+            student.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            student.setFirstName(registerRequest.getFirstName());
+            student.setLastName(registerRequest.getLastName());
+            student.setPhone(registerRequest.getPhone());
+            student.setStudentId(registerRequest.getStudentId());
+            student.setMajor(registerRequest.getMajor());
+            student.setGraduationYear(registerRequest.getGraduationYear());
+            student.setCampusLocation(registerRequest.getCampusLocation());
+            user = student;
+        } else if (registerRequest.getRole() == UserRole.ADMIN) {
+            Admin admin = new Admin();
+            admin.setUsername(registerRequest.getUsername());
+            admin.setEmail(registerRequest.getEmail());
+            admin.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            admin.setFirstName(registerRequest.getFirstName());
+            admin.setLastName(registerRequest.getLastName());
+            admin.setPhone(registerRequest.getPhone());
+            if (registerRequest.getAdminLevel() != null) {
+                admin.setAdminLevel(AdminLevel.valueOf(registerRequest.getAdminLevel()));
+            }
+            user = admin;
+        } else {
+            throw new BadCredentialsException("Invalid role");
+        }
+        
+        // Save user to database
+        user = userRepository.save(user);
+        
+        // Generate tokens
+        String accessToken = jwtUtil.generateAccessToken(user);
+        String refreshTokenValue = jwtUtil.generateRefreshToken(user);
+        
+        // Save refresh token to database
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(refreshTokenValue);
+        refreshToken.setUser(user);
+        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7)); // 7 days
+        refreshToken.setDeviceInfo("Registration");
+        
+        refreshTokenRepository.save(refreshToken);
+        
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshTokenValue);
+        response.setTokenType("Bearer");
+        response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
+        response.setRole(user.getRole());
+        response.setUsername(user.getUsername());
+        response.setUserId(user.getUserId());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setPhone(user.getPhone());
+        response.setActive(user.isActive());
+        return response;
     }
 }
