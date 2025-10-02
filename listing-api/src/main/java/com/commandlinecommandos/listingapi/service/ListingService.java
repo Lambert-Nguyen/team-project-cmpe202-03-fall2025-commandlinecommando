@@ -140,9 +140,19 @@ public class ListingService {
     public boolean isListingOwner(Long listingId, Long sellerId) {
         Listing listing = getListingById(listingId);
         if (listing == null) {
-            return false;
+            throw new ListingException("Listing not found with id: " + listingId);
         }
 
         return listing.getSellerId().equals(sellerId);
+    }
+
+    public int incrementViewCount(Long listingId) {
+        Listing listing = getListingById(listingId);
+        if (listing == null) {
+            throw new ListingException("Listing not found with id: " + listingId);
+        }
+
+        listing.incrementViewCount();
+        return listingRepository.save(listing).getViewCount();
     }
 }

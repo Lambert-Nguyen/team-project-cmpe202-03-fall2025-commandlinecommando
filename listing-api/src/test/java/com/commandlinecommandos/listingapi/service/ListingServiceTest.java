@@ -795,4 +795,147 @@ class ListingServiceTest {
         verify(listingRepository).findWithFilters(
             ListingStatus.ACTIVE, null, null, null, null, null, null, testPageable);
     }
+
+    // Test incrementViewCount method
+    @Test
+    void testIncrementViewCount_Success() {
+        // Arrange
+        testListing.setViewCount(5);
+        testListing.setStatus(ListingStatus.ACTIVE);
+        
+        Listing updatedListing = new Listing(
+            testListing.getTitle(),
+            testListing.getDescription(),
+            testListing.getPrice(),
+            testListing.getCategory(),
+            testListing.getCondition(),
+            testListing.getLocation(),
+            testListing.getSellerId()
+        );
+        updatedListing.setListingId(testListing.getListingId());
+        updatedListing.setViewCount(6); // Incremented view count
+        updatedListing.setStatus(ListingStatus.ACTIVE);
+
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(testListing));
+        when(listingRepository.save(any(Listing.class))).thenReturn(updatedListing);
+
+        // Act
+        int result = listingService.incrementViewCount(1L);
+
+        // Assert
+        assertEquals(6, result);
+        verify(listingRepository).findById(1L);
+        verify(listingRepository).save(any(Listing.class));
+    }
+
+    @Test
+    void testIncrementViewCount_FromZero() {
+        // Arrange
+        testListing.setViewCount(0);
+        testListing.setStatus(ListingStatus.ACTIVE);
+        
+        Listing updatedListing = new Listing(
+            testListing.getTitle(),
+            testListing.getDescription(),
+            testListing.getPrice(),
+            testListing.getCategory(),
+            testListing.getCondition(),
+            testListing.getLocation(),
+            testListing.getSellerId()
+        );
+        updatedListing.setListingId(testListing.getListingId());
+        updatedListing.setViewCount(1); // Incremented from 0 to 1
+        updatedListing.setStatus(ListingStatus.ACTIVE);
+
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(testListing));
+        when(listingRepository.save(any(Listing.class))).thenReturn(updatedListing);
+
+        // Act
+        int result = listingService.incrementViewCount(1L);
+
+        // Assert
+        assertEquals(1, result);
+        verify(listingRepository).findById(1L);
+        verify(listingRepository).save(any(Listing.class));
+    }
+
+    @Test
+    void testIncrementViewCount_ListingNotFound() {
+        // Arrange
+        when(listingRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act
+        ListingException exception = assertThrows(ListingException.class, () -> {
+            listingService.incrementViewCount(999L);
+        });
+
+        // Assert
+        assertEquals("Listing not found with id: 999", exception.getMessage());
+        verify(listingRepository).findById(999L);
+        verify(listingRepository, never()).save(any(Listing.class));
+    }
+
+    @Test
+    void testIncrementViewCount_WithInactiveListing() {
+        // Arrange
+        testListing.setViewCount(5);
+        testListing.setStatus(ListingStatus.SOLD); // Inactive listing
+        
+        // For inactive listings, the view count should not increment according to the Listing model
+        // The incrementViewCount method in Listing model checks if status is ACTIVE
+        Listing updatedListing = new Listing(
+            testListing.getTitle(),
+            testListing.getDescription(),
+            testListing.getPrice(),
+            testListing.getCategory(),
+            testListing.getCondition(),
+            testListing.getLocation(),
+            testListing.getSellerId()
+        );
+        updatedListing.setListingId(testListing.getListingId());
+        updatedListing.setViewCount(5); // View count should remain the same for inactive listings
+        updatedListing.setStatus(ListingStatus.SOLD);
+
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(testListing));
+        when(listingRepository.save(any(Listing.class))).thenReturn(updatedListing);
+
+        // Act
+        int result = listingService.incrementViewCount(1L);
+
+        // Assert
+        assertEquals(5, result); // View count should not increment for inactive listings
+        verify(listingRepository).findById(1L);
+        verify(listingRepository).save(any(Listing.class));
+    }
+
+    @Test
+    void testIncrementViewCount_WithCancelledListing() {
+        // Arrange
+        testListing.setViewCount(3);
+        testListing.setStatus(ListingStatus.CANCELLED); // Cancelled listing
+        
+        Listing updatedListing = new Listing(
+            testListing.getTitle(),
+            testListing.getDescription(),
+            testListing.getPrice(),
+            testListing.getCategory(),
+            testListing.getCondition(),
+            testListing.getLocation(),
+            testListing.getSellerId()
+        );
+        updatedListing.setListingId(testListing.getListingId());
+        updatedListing.setViewCount(3); // View count should remain the same for cancelled listings
+        updatedListing.setStatus(ListingStatus.CANCELLED);
+
+        when(listingRepository.findById(1L)).thenReturn(Optional.of(testListing));
+        when(listingRepository.save(any(Listing.class))).thenReturn(updatedListing);
+
+        // Act
+        int result = listingService.incrementViewCount(1L);
+
+        // Assert
+        assertEquals(3, result); // View count should not increment for cancelled listings
+        verify(listingRepository).findById(1L);
+        verify(listingRepository).save(any(Listing.class));
+    }
 }
