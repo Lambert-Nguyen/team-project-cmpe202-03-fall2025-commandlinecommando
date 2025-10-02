@@ -21,6 +21,9 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
 
     Optional<Page<Listing>> findByStatus(ListingStatus status, Pageable pageable);
 
+    @Query("SELECT l FROM Listing l WHERE l.status = :status ORDER BY l.createdAt DESC")
+    Optional<Page<Listing>> findByStatusOrderByCreatedAtDesc(@Param("status") ListingStatus status, Pageable pageable);
+
     Optional<Page<Listing>> findBySellerIdAndStatus(Long sellerId, ListingStatus status, Pageable pageable);
     
     @Query("SELECT l FROM Listing l WHERE l.title LIKE %:keyword% OR l.description LIKE %:keyword%")
