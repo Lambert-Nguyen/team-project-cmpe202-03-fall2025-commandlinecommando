@@ -74,6 +74,7 @@ class FileStorageServiceTest {
         testListing.setUpdatedAt(LocalDateTime.now());
     }
 
+    // Test storeFile method
     @Test
     void testStoreFile_Success() throws IOException {
         // Arrange
@@ -301,6 +302,7 @@ class FileStorageServiceTest {
         verify(listingImageRepository).save(any(ListingImage.class));
     }
 
+    // Test storeFiles method
     @Test
     void testStoreFiles_Success() throws IOException {
         // Arrange
@@ -350,6 +352,7 @@ class FileStorageServiceTest {
         verify(listingImageRepository, never()).save(any(ListingImage.class));
     }
 
+    // Test getImagesByListing method
     @Test
     void testGetImagesByListing_Success() {
         // Arrange
@@ -386,6 +389,7 @@ class FileStorageServiceTest {
         verify(listingImageRepository).findByListingOrderedByDisplayOrder(testListing);
     }
 
+    // Test getPrimaryImageByListing method
     @Test
     void testGetPrimaryImageByListing_Success() {
         // Arrange
@@ -419,7 +423,7 @@ class FileStorageServiceTest {
         verify(listingImageRepository).findPrimaryImageByListing(testListing);
     }
 
-
+    // Test deleteImageByListingImageId method
     @Test
     void testDeleteImageByListingImageId_Success() throws IOException {
         // Arrange
@@ -463,6 +467,7 @@ class FileStorageServiceTest {
         verify(listingImageRepository, never()).delete(any(ListingImage.class));
     }
 
+    // Test deleteAllImagesByListing method
     @Test
     void testDeleteAllImagesByListing_Success() throws IOException {
         // Arrange
