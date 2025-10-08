@@ -7,7 +7,7 @@ spring:
   application:
     name: campusmarketplace
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:prod}  # Changed default to prod (PostgreSQL)
   servlet:
     multipart:
       max-file-size: 10MB
@@ -117,9 +117,9 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
-    show-sql: false
-    format-sql: false
+      ddl-auto: validate  # Use Flyway for schema management
+    show-sql: true  # Enable for debugging
+    format-sql: true
     properties:
       hibernate:
         default_schema: public

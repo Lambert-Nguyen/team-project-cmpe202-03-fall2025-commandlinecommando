@@ -16,8 +16,9 @@ import java.time.LocalDateTime;
 public class RefreshToken {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @Column(name = "id", updatable = false, nullable = false)
+    private java.util.UUID id;
     
     @NotNull
     @Column(unique = true)
@@ -63,11 +64,11 @@ public class RefreshToken {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public java.util.UUID getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(java.util.UUID id) {
         this.id = id;
     }
     
