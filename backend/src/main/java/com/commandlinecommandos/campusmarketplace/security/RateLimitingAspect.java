@@ -31,7 +31,9 @@ public class RateLimitingAspect {
     @Around("@annotation(org.springframework.web.bind.annotation.PostMapping) && " +
             "(execution(* com.commandlinecommandos.campusmarketplace.controller.AuthController.login(..)) || " +
             "execution(* com.commandlinecommandos.campusmarketplace.controller.AuthController.register(..)) || " +
-            "execution(* com.commandlinecommandos.campusmarketplace.controller.AuthController.refreshToken(..)))")
+            "execution(* com.commandlinecommandos.campusmarketplace.controller.AuthController.refreshToken(..)) || " +
+            "execution(* com.commandlinecommandos.campusmarketplace.controller.PasswordResetController.forgotPassword(..)) || " +
+            "execution(* com.commandlinecommandos.campusmarketplace.controller.PasswordResetController.resetPassword(..)))")
     public Object rateLimitAuthEndpoints(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {

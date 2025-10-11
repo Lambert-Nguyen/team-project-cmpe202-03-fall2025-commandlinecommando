@@ -83,12 +83,27 @@ public class WebSecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
 
                 // Admin only endpoints
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // Student and Admin endpoints
-                .requestMatchers("/listings/**").hasAnyRole("STUDENT", "ADMIN")
-                .requestMatchers("/user/**").hasAnyRole("STUDENT", "ADMIN")
+                .requestMatchers("/api/listings/**").hasAnyRole("BUYER", "SELLER", "ADMIN")
+                .requestMatchers("/api/user/**").hasAnyRole("BUYER", "SELLER", "ADMIN")
 
+                .requestMatchers("/actuator/prometheus").permitAll()
+                .requestMatchers("/actuator/metrics").permitAll()
+                
+                // Swagger/OpenAPI endpoints
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                
+                
+                // User profile endpoints (authenticated users)
+                .requestMatchers("/api/users/profile").authenticated()
+                .requestMatchers("/api/users/change-password").authenticated()
+                .requestMatchers("/api/users/deactivate").authenticated()
+                .requestMatchers("/api/users/{userId}").authenticated()
+                
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             );

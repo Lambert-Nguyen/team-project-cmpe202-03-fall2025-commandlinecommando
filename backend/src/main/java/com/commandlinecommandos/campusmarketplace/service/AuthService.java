@@ -17,6 +17,7 @@ import com.commandlinecommandos.campusmarketplace.dto.RegisterRequest;
 import com.commandlinecommandos.campusmarketplace.model.RefreshToken;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.model.UserRole;
+import com.commandlinecommandos.campusmarketplace.model.VerificationStatus;
 import com.commandlinecommandos.campusmarketplace.repository.RefreshTokenRepository;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.security.JwtUtil;
@@ -44,12 +45,28 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
+    @Autowired(required = false)
+    private LoginAttemptService loginAttemptService;
+    
+    @Autowired(required = false)
+    private AuditService auditService;
+    
     public AuthResponse login(AuthRequest authRequest) throws AuthenticationException {
+        String username = authRequest.getUsername();
+        
+        // Check if account is locked due to failed attempts
+        if (loginAttemptService != null && loginAttemptService.isAccountLocked(username)) {
+            int remainingTime = loginAttemptService.getRemainingLockoutTime(username);
+            throw new BadCredentialsException(
+                String.format("Account is temporarily locked due to multiple failed login attempts. Please try again in %d minutes.", remainingTime)
+            );
+        }
+        
         try {
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    authRequest.getUsername(), 
+                    username, 
                     authRequest.getPassword()
                 )
             );
@@ -58,8 +75,28 @@ public class AuthService {
             
             // Check if user is active
             if (!user.isActive()) {
+                if (loginAttemptService != null) {
+                    loginAttemptService.recordFailedLogin(username, "Account is disabled");
+                }
                 throw new BadCredentialsException("Account is disabled");
             }
+            
+            // Check if user is suspended
+            if (user.getVerificationStatus() == VerificationStatus.SUSPENDED) {
+                if (loginAttemptService != null) {
+                    loginAttemptService.recordFailedLogin(username, "Account is suspended");
+                }
+                throw new BadCredentialsException("Account is suspended");
+            }
+            
+            // Record successful login
+            if (loginAttemptService != null) {
+                loginAttemptService.recordSuccessfulLogin(username);
+            }
+            
+            // Update last login time
+            user.recordLogin();
+            userRepository.save(user);
             
             // Generate tokens
             String accessToken = jwtUtil.generateAccessToken(user);
@@ -74,6 +111,11 @@ public class AuthService {
             
             refreshTokenRepository.save(refreshToken);
             
+            // Audit log
+            if (auditService != null) {
+                auditService.logLogin(user, true);
+            }
+            
             AuthResponse response = new AuthResponse();
             response.setAccessToken(accessToken);
             response.setRefreshToken(refreshTokenValue);
@@ -85,6 +127,16 @@ public class AuthService {
             return response;
             
         } catch (AuthenticationException e) {
+            // Record failed login attempt
+            if (loginAttemptService != null) {
+                loginAttemptService.recordFailedLogin(username, "Invalid credentials");
+            }
+            
+            // Audit log
+            if (auditService != null) {
+                auditService.logFailedLogin(username, e.getMessage());
+            }
+            
             throw new BadCredentialsException("Invalid username or password");
         }
     }
@@ -139,6 +191,11 @@ public class AuthService {
         refreshTokenOpt.ifPresent(token -> {
             token.setRevoked(true);
             refreshTokenRepository.save(token);
+            
+            // Audit log
+            if (auditService != null) {
+                auditService.logLogout(token.getUser());
+            }
         });
     }
     
@@ -147,6 +204,12 @@ public class AuthService {
         Optional<User> userOpt = userRepository.findByUsername(username);
         userOpt.ifPresent(user -> {
             refreshTokenRepository.revokeAllTokensByUser(user);
+            
+            // Audit log
+            if (auditService != null) {
+                auditService.logAuditEvent(user, "AUTH", "LOGOUT_ALL_DEVICES", 
+                    "User logged out from all devices");
+            }
         });
     }
     
