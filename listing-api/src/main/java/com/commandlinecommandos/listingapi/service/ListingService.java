@@ -136,23 +136,95 @@ public class ListingService {
     }
 
     public Page<Listing> getListingsBySellerIdAndStatus(Long sellerId, ListingStatus status, Pageable pageable) {
-        return listingRepository.findBySellerIdAndStatus(sellerId, status, pageable)
-            .orElseThrow(() -> new ListingException("No listings found for seller with id: " + sellerId + " and status: " + status));
+        logger.debug("Retrieving listings for seller ID: {} with status: {} - page: {}, size: {}", 
+                   sellerId, status, pageable.getPageNumber(), pageable.getPageSize());
+        
+        try {
+            Page<Listing> listings = listingRepository.findBySellerIdAndStatus(sellerId, status, pageable)
+                .orElseThrow(() -> new ListingException("No listings found for seller with id: " + sellerId + " and status: " + status));
+            
+            logger.info("Successfully retrieved {} listings for seller ID: {} with status: {} (page {}/{} with {} total elements)", 
+                       listings.getNumberOfElements(), sellerId, status, pageable.getPageNumber() + 1, 
+                       listings.getTotalPages(), listings.getTotalElements());
+            
+            return listings;
+        } catch (ListingException e) {
+            logger.warn("No listings found for seller ID: {} with status: {}", sellerId, status);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error retrieving listings for seller ID: {} with status: {} - error: {}", 
+                        sellerId, status, e.getMessage(), e);
+            throw new ListingException("Error retrieving listings for seller ID: " + sellerId + " with status: " + status + " - error: " + e.getMessage(), e);
+        }
     }
 
     public Page<Listing> getListingsByCategory(Category category, Pageable pageable) {
-        return listingRepository.findByCategory(category, pageable)
-            .orElseThrow(() -> new ListingException("No listings found for category: " + category));
+        logger.debug("Retrieving listings for category: {} - page: {}, size: {}", 
+                   category, pageable.getPageNumber(), pageable.getPageSize());
+        
+        try {
+            Page<Listing> listings = listingRepository.findByCategory(category, pageable)
+                .orElseThrow(() -> new ListingException("No listings found for category: " + category));
+            
+            logger.info("Successfully retrieved {} listings for category: {} (page {}/{} with {} total elements)", 
+                       listings.getNumberOfElements(), category, pageable.getPageNumber() + 1, 
+                       listings.getTotalPages(), listings.getTotalElements());
+            
+            return listings;
+        } catch (ListingException e) {
+            logger.warn("No listings found for category: {}", category);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error retrieving listings for category: {} - error: {}", 
+                        category, e.getMessage(), e);
+            throw new ListingException("Error retrieving listings for category: " + category + " - error: " + e.getMessage(), e);
+        }
     }
 
     public Page<Listing> getListingsByStatus(ListingStatus status, Pageable pageable) {
-        return listingRepository.findByStatus(status, pageable)
-            .orElseThrow(() -> new ListingException("No listings found for status: " + status));
+        logger.debug("Retrieving listings for status: {} - page: {}, size: {}", 
+                   status, pageable.getPageNumber(), pageable.getPageSize());
+        
+        try {
+            Page<Listing> listings = listingRepository.findByStatus(status, pageable)
+                .orElseThrow(() -> new ListingException("No listings found for status: " + status));
+            
+            logger.info("Successfully retrieved {} listings for status: {} (page {}/{} with {} total elements)", 
+                       listings.getNumberOfElements(), status, pageable.getPageNumber() + 1, 
+                       listings.getTotalPages(), listings.getTotalElements());
+            
+            return listings;
+        } catch (ListingException e) {
+            logger.warn("No listings found for status: {}", status);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error retrieving listings for status: {} - error: {}", 
+                        status, e.getMessage(), e);
+            throw new ListingException("Error retrieving listings for status: " + status + " - error: " + e.getMessage(), e);
+        }
     }
 
     public Page<Listing> searchListings(String keyword, Pageable pageable) {
-        return listingRepository.findByTitleOrDescriptionContaining(keyword, pageable)
-            .orElseThrow(() -> new ListingException("No listings found with keyword: " + keyword));
+        logger.debug("Searching listings with keyword: '{}' - page: {}, size: {}", 
+                   keyword, pageable.getPageNumber(), pageable.getPageSize());
+        
+        try {
+            Page<Listing> listings = listingRepository.findByTitleOrDescriptionContaining(keyword, pageable)
+                .orElseThrow(() -> new ListingException("No listings found with keyword: " + keyword));
+            
+            logger.info("Search completed - found {} listings with keyword: '{}' (page {}/{} with {} total elements)", 
+                       listings.getNumberOfElements(), keyword, pageable.getPageNumber() + 1, 
+                       listings.getTotalPages(), listings.getTotalElements());
+            
+            return listings;
+        } catch (ListingException e) {
+            logger.info("No listings found with keyword: '{}'", keyword);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error searching listings with keyword: '{}' - error: {}", 
+                        keyword, e.getMessage(), e);
+            throw new ListingException("Error searching listings with keyword: '" + keyword + "' - error: " + e.getMessage(), e);
+        }
     }
 
     public Page<Listing> getListingsWithFilters(ListingStatus status, String keyword, Category category, ItemCondition condition,
@@ -317,7 +389,20 @@ public class ListingService {
     }
 
     public Long countListingsBySellerIdAndStatus(Long sellerId, ListingStatus status) {
-        return listingRepository.countBySellerIdAndStatus(sellerId, status);
+        logger.debug("Counting listings for seller ID: {} with status: {}", sellerId, status);
+        
+        try {
+            Long count = listingRepository.countBySellerIdAndStatus(sellerId, status);
+            
+            logger.debug("Successfully counted {} listings for seller ID: {} with status: {}", 
+                        count, sellerId, status);
+            
+            return count;
+        } catch (Exception e) {
+            logger.error("Error counting listings for seller ID: {} with status: {} - error: {}", 
+                        sellerId, status, e.getMessage(), e);
+            throw new ListingException("Error counting listings for seller ID: " + sellerId + " with status: " + status + " - error: " + e.getMessage(), e);
+        }
     }
 
     public boolean isListingOwner(Long listingId, Long sellerId) {
