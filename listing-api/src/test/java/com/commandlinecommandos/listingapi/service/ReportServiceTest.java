@@ -1,6 +1,7 @@
 package com.commandlinecommandos.listingapi.service;
 
 import com.commandlinecommandos.listingapi.exception.ReportException;
+import com.commandlinecommandos.listingapi.exception.ReportNotFoundException;
 import com.commandlinecommandos.listingapi.model.*;
 import com.commandlinecommandos.listingapi.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,12 +124,12 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportById(999L);
         });
 
         // Assert
-        assertEquals("Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
     }
 
@@ -176,7 +177,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportsByStatus(ReportStatus.RESOLVED, testPageable);
         });
 
@@ -211,7 +212,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportsByReporterId(999L, testPageable);
         });
 
@@ -246,7 +247,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportsByListingId(999L, testPageable);
         });
 
@@ -281,7 +282,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportsByReportType(ReportType.FAKE_LISTING, testPageable);
         });
 
@@ -316,7 +317,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getReportsByReviewedBy(999L, testPageable);
         });
 
@@ -351,7 +352,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.getPendingReports(testPageable);
         });
 
@@ -397,7 +398,7 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.updateReport(
                 999L,
                 ReportType.SPAM,
@@ -406,7 +407,7 @@ class ReportServiceTest {
         });
 
         // Assert
-        assertEquals("Error updating report ID: 999 - error: Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
         verify(reportRepository, never()).save(any(Report.class));
     }
@@ -447,12 +448,12 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.markAsReviewed(999L, 300L);
         });
 
         // Assert
-        assertEquals("Error marking report ID: 999 as reviewed by ID: 300 - error: Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
         verify(reportRepository, never()).save(any(Report.class));
     }
@@ -491,12 +492,12 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.markAsResolved(999L);
         });
 
         // Assert
-        assertEquals("Error resolving report ID: 999 - error: Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
         verify(reportRepository, never()).save(any(Report.class));
     }
@@ -535,12 +536,12 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.markAsDismissed(999L);
         });
 
         // Assert
-        assertEquals("Error dismissing report ID: 999 - error: Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
         verify(reportRepository, never()).save(any(Report.class));
     }
@@ -566,12 +567,12 @@ class ReportServiceTest {
         when(reportRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.deleteReport(999L);
         });
 
         // Assert
-        assertEquals("Error deleting report ID: 999 - error: Report not found with id: 999", exception.getMessage());
+        assertEquals("Report with ID 999 not found", exception.getMessage());
         verify(reportRepository).findById(999L);
         verify(reportRepository, never()).delete(any(Report.class));
     }
@@ -940,7 +941,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.searchReports(
                 ReportStatus.RESOLVED,
                 null,
@@ -964,7 +965,7 @@ class ReportServiceTest {
             .thenThrow(repositoryException);
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.searchReports(
                 ReportStatus.PENDING,
                 null,
@@ -1125,7 +1126,7 @@ class ReportServiceTest {
             .thenReturn(Optional.empty());
 
         // Act
-        ReportException exception = assertThrows(ReportException.class, () -> {
+        ReportNotFoundException exception = assertThrows(ReportNotFoundException.class, () -> {
             reportService.searchReports(
                 ReportStatus.RESOLVED,
                 100L,

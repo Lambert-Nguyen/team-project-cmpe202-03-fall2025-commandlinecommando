@@ -11,6 +11,7 @@ import com.commandlinecommandos.listingapi.model.Listing;
 import com.commandlinecommandos.listingapi.model.ListingImage;
 import com.commandlinecommandos.listingapi.service.FileStorageService;
 import com.commandlinecommandos.listingapi.service.ListingService;
+import com.commandlinecommandos.listingapi.exception.UnauthorizedAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,8 +39,7 @@ public class FileUploadController {
             @RequestParam("displayOrder") int displayOrder) {
 
         if (file == null) {
-            logger.warn("Null file provided for upload to listing ID: {}", listingId);
-            return ResponseEntity.badRequest().body("File cannot be null");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File cannot be null");
         }
 
         logger.info("Received file upload request - listing ID: {}, filename: '{}', size: {} bytes, displayOrder: {}", 
@@ -49,8 +49,7 @@ public class FileUploadController {
             Listing listing = listingService.getListingById(listingId);
             
             if (listing == null) {
-                logger.warn("Listing not found for file upload - ID: {}", listingId);
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Listing not found");
             }
             
             // TODO: retrieve user id
@@ -58,8 +57,7 @@ public class FileUploadController {
             logger.debug("Using temporary user ID: {} for file upload authorization", userId);
             
             if (!verifyUser(listing, userId)) {
-                logger.warn("Unauthorized file upload attempt - listing ID: {}, user ID: {}", listingId, userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to upload files for this listing");
+                throw new UnauthorizedAccessException("listing", listingId, userId);
             }
 
             fileStorageService.storeFile(file, listing, displayOrder);
@@ -67,9 +65,8 @@ public class FileUploadController {
                        file.getOriginalFilename(), listingId, displayOrder);
             
             return ResponseEntity.ok("File uploaded successfully");
-        } catch (Exception e) {
-            logger.error("Error uploading file '{}' for listing ID: {} - error: {}", 
-                        file.getOriginalFilename(), listingId, e.getMessage(), e);
+        } catch (RuntimeException e) {
+            logger.error("Error uploading file for listing ID: {}", listingId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file");
         }
     }
@@ -81,24 +78,21 @@ public class FileUploadController {
             @RequestParam("displayOrders") int[] displayOrders) {
 
         if (files == null) {
-            logger.warn("Null files list provided for upload to listing ID: {}", listingId);
-            return ResponseEntity.badRequest().body("Files cannot be null");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Files cannot be null");
+        }
+
+        if (files.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No files provided");
         }
 
         logger.info("Received multiple file upload request - listing ID: {}, fileCount: {}, totalSize: {} bytes", 
                    listingId, files.size(), files.stream().mapToLong(f -> f.getSize()).sum());
         
         try {
-            if (files.isEmpty()) {
-                logger.warn("No files provided for upload to listing ID: {}", listingId);
-                return ResponseEntity.badRequest().body("No files provided");
-            }
-            
             Listing listing = listingService.getListingById(listingId);
             
             if (listing == null) {
-                logger.warn("Listing not found for multiple file upload - ID: {}", listingId);
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Listing not found");
             }
             
             // TODO: retrieve user id
@@ -106,17 +100,15 @@ public class FileUploadController {
             logger.debug("Using temporary user ID: {} for multiple file upload authorization", userId);
             
             if (!verifyUser(listing, userId)) {
-                logger.warn("Unauthorized multiple file upload attempt - listing ID: {}, user ID: {}", listingId, userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to upload files for this listing");
+                throw new UnauthorizedAccessException("listing", listingId, userId);
             }
 
             fileStorageService.storeFiles(files, listing, displayOrders);
             logger.info("Successfully uploaded {} files for listing ID: {}", files.size(), listingId);
             
             return ResponseEntity.ok("Files uploaded successfully");
-        } catch (Exception e) {
-            logger.error("Error uploading multiple files for listing ID: {} - error: {}", 
-                        listingId, e.getMessage(), e);
+        } catch (RuntimeException e) {
+            logger.error("Error uploading multiple files for listing ID: {}", listingId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload files");
         }
     }
@@ -127,19 +119,18 @@ public class FileUploadController {
         
         try {
             Listing listing = listingService.getListingById(listingId);
+            
             if (listing == null) {
-                logger.warn("Listing not found for image retrieval - ID: {}", listingId);
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Listing not found");
             }
             
             List<ListingImage> images = fileStorageService.getImagesByListing(listing);
             logger.info("Successfully retrieved {} images for listing ID: {}", images.size(), listingId);
             
             return ResponseEntity.ok(images);
-        } catch (Exception e) {
-            logger.error("Error retrieving images for listing ID: {} - error: {}", 
-                        listingId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to get listing images: " + e.getMessage());
+        } catch (RuntimeException e) {
+            logger.error("Error retrieving images for listing ID: {}", listingId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to get listing images");
         }
     }
 
@@ -149,10 +140,9 @@ public class FileUploadController {
         
         try {
             Listing listing = listingService.getListingById(listingId);
-
+            
             if (listing == null) {
-                logger.warn("Listing not found for image deletion - ID: {}", listingId);
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Listing not found");
             }
 
             // TODO: retrieve user id
@@ -160,19 +150,16 @@ public class FileUploadController {
             logger.debug("Using temporary user ID: {} for image deletion authorization", userId);
             
             if (!verifyUser(listing, userId)) {
-                logger.warn("Unauthorized image deletion attempt - listing ID: {}, user ID: {}, image ID: {}", 
-                           listingId, userId, imageId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to delete listing images");
+                throw new UnauthorizedAccessException("listing", listingId, userId);
             }
 
             fileStorageService.deleteImageByListingImageId(imageId);
             logger.info("Successfully deleted image ID: {} for listing ID: {}", imageId, listingId);
             
             return ResponseEntity.ok("Listing image deleted successfully");
-        } catch (Exception e) {
-            logger.error("Error deleting image ID: {} for listing ID: {} - error: {}", 
-                        imageId, listingId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete listing image: " + e.getMessage());
+        } catch (RuntimeException e) {
+            logger.error("Error deleting image ID: {} for listing ID: {}", imageId, listingId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete listing image");
         }
     }
 
