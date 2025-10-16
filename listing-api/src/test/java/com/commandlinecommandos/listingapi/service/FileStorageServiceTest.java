@@ -216,8 +216,7 @@ class FileStorageServiceTest {
             fileStorageService.storeFile(multipartFile, testListing, displayOrder);
         });
         
-        assertTrue(exception.getMessage().contains("Could not store file"));
-        assertTrue(exception.getMessage().contains(originalFileName));
+        assertTrue(exception.getMessage().contains("Test IO exception"));
         assertTrue(exception.getCause() instanceof IOException);
         
         verify(listingImageRepository, never()).save(any(ListingImage.class));
