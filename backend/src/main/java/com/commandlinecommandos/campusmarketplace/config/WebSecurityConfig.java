@@ -66,19 +66,29 @@ public class WebSecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
+                // Public auth endpoints (no authentication required)
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register").permitAll()
+                .requestMatchers("/api/auth/refresh").permitAll()
+                .requestMatchers("/api/auth/logout").permitAll()
+                .requestMatchers("/api/auth/validate").permitAll()
+
+                // Protected auth endpoints (authentication required)
+                .requestMatchers("/api/auth/me").authenticated()
+                .requestMatchers("/api/auth/logout-all").authenticated()
+
+                // Other public endpoints
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                
+
                 // Admin only endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
+
                 // Student and Admin endpoints
                 .requestMatchers("/api/listings/**").hasAnyRole("STUDENT", "ADMIN")
                 .requestMatchers("/api/user/**").hasAnyRole("STUDENT", "ADMIN")
-                
+
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             );
