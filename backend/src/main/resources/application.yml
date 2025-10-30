@@ -106,6 +106,7 @@ spring:
     password: ${DB_APP_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
+      auto-commit: false
       minimum-idle: 5
       maximum-pool-size: 20
       idle-timeout: 300000
