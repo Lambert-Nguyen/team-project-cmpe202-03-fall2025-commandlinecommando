@@ -1,6 +1,17 @@
 # Campus Marketplace - Git Ignore File
 
 # ===========================================
+# FRONTEND
+# ===========================================
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/package-lock.json
+
+# ===========================================
 # JAVA / SPRING BOOT BACKEND
 # ===========================================
 
@@ -31,6 +42,12 @@ replay_pid*
 
 # Maven
 target/
+
+# ===========================================
+# IDEs
+# ===========================================
+.vscode/
+.idea/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -268,3 +285,4 @@ htmlcov/
 *.rar
 *.tar
 *.zip
+>>>>>>> origin/main
