@@ -65,14 +65,14 @@ class UserProfileControllerIntegrationTest {
         testUser.setPassword(passwordEncoder.encode("Password123!"));
         testUser.setFirstName("Test");
         testUser.setLastName("User");
-        testUser.setRole(UserRole.BUYER);
+        testUser.setRole(UserRole.STUDENT);
         testUser.setUniversity(testUniversity);
         testUser.setActive(true);
         testUser = userRepository.save(testUser);
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"BUYER"})
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testGetCurrentUserProfile_Success() throws Exception {
         mockMvc.perform(get("/users/profile"))
             .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"BUYER"})
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testUpdateProfile_Success() throws Exception {
         ProfileUpdateRequest request = new ProfileUpdateRequest();
         request.setFirstName("Updated");
@@ -103,7 +103,7 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"BUYER"})
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testChangePassword_Success() throws Exception {
         PasswordChangeRequest request = new PasswordChangeRequest();
         request.setCurrentPassword("Password123!");
@@ -118,7 +118,7 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"BUYER"})
+    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testDeactivateAccount_Success() throws Exception {
         mockMvc.perform(post("/users/deactivate"))
             .andExpect(status().isOk())

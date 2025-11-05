@@ -5,7 +5,6 @@ import com.commandlinecommandos.campusmarketplace.model.VerificationStatus;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +12,6 @@ import java.util.UUID;
 /**
  * DTO for bulk operations on users (max 100 users at once)
  */
-@Data
 public class BulkUserActionRequest {
     
     @NotEmpty(message = "User IDs list cannot be empty")
@@ -36,5 +34,49 @@ public class BulkUserActionRequest {
         SUSPEND,
         DELETE
     }
-}
 
+    // Constructors
+    public BulkUserActionRequest() {
+    }
+
+    // Getters and Setters
+    public List<UUID> getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(List<UUID> userIds) {
+        this.userIds = userIds;
+    }
+
+    public BulkAction getAction() {
+        return action;
+    }
+
+    public void setAction(BulkAction action) {
+        this.action = action;
+    }
+
+    public UserRole getNewRole() {
+        return newRole;
+    }
+
+    public void setNewRole(UserRole newRole) {
+        this.newRole = newRole;
+    }
+
+    public VerificationStatus getNewVerificationStatus() {
+        return newVerificationStatus;
+    }
+
+    public void setNewVerificationStatus(VerificationStatus newVerificationStatus) {
+        this.newVerificationStatus = newVerificationStatus;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+}

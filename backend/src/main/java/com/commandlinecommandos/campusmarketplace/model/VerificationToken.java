@@ -2,7 +2,6 @@ package com.commandlinecommandos.campusmarketplace.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,7 +15,6 @@ import java.util.UUID;
     @Index(name = "idx_verification_user", columnList = "user_id"),
     @Index(name = "idx_verification_expires", columnList = "expires_at")
 })
-@Data
 public class VerificationToken {
     
     @Id
@@ -48,6 +46,17 @@ public class VerificationToken {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
+    public enum TokenType {
+        EMAIL_VERIFICATION,
+        PASSWORD_RESET,
+        EMAIL_CHANGE
+    }
+    
+    // Constructors
+    public VerificationToken() {
+    }
+    
+    // Business methods
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
     }
@@ -60,11 +69,69 @@ public class VerificationToken {
         this.isUsed = true;
         this.usedAt = LocalDateTime.now();
     }
-    
-    public enum TokenType {
-        EMAIL_VERIFICATION,
-        PASSWORD_RESET,
-        EMAIL_CHANGE
+
+    // Getters and Setters
+    public UUID getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(UUID tokenId) {
+        this.tokenId = tokenId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public TokenType getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(TokenType tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public LocalDateTime getUsedAt() {
+        return usedAt;
+    }
+
+    public void setUsedAt(LocalDateTime usedAt) {
+        this.usedAt = usedAt;
+    }
+
+    public boolean isUsed() {
+        return isUsed;
+    }
+
+    public void setUsed(boolean used) {
+        isUsed = used;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
-

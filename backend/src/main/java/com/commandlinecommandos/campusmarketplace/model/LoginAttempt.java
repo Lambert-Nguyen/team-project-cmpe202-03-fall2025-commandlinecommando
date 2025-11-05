@@ -2,8 +2,6 @@ package com.commandlinecommandos.campusmarketplace.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,8 +15,6 @@ import java.util.UUID;
     @Index(name = "idx_login_ip", columnList = "ip_address"),
     @Index(name = "idx_login_created", columnList = "created_at")
 })
-@Data
-@NoArgsConstructor
 public class LoginAttempt {
     
     @Id
@@ -48,6 +44,10 @@ public class LoginAttempt {
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
     
+    // Constructors
+    public LoginAttempt() {
+    }
+    
     public LoginAttempt(String username, String ipAddress, boolean success) {
         this.username = username;
         this.ipAddress = ipAddress;
@@ -60,5 +60,69 @@ public class LoginAttempt {
         this.success = success;
         this.failureReason = failureReason;
     }
-}
 
+    // Getters and Setters
+    public UUID getAttemptId() {
+        return attemptId;
+    }
+
+    public void setAttemptId(UUID attemptId) {
+        this.attemptId = attemptId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
+    }
+
+    public String getDeviceInfo() {
+        return deviceInfo;
+    }
+
+    public void setDeviceInfo(String deviceInfo) {
+        this.deviceInfo = deviceInfo;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+}

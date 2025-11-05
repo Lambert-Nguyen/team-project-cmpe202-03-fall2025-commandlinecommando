@@ -49,17 +49,16 @@ public class AdminAnalyticsController {
             
             // Users by role
             Map<String, Long> usersByRole = new HashMap<>();
-            usersByRole.put("BUYER", userRepository.countByRole(UserRole.BUYER));
-            usersByRole.put("SELLER", userRepository.countByRole(UserRole.SELLER));
+            usersByRole.put("STUDENT", userRepository.countByRole(UserRole.STUDENT));
             usersByRole.put("ADMIN", userRepository.countByRole(UserRole.ADMIN));
             stats.put("usersByRole", usersByRole);
             
             // Users by verification status
             Map<String, Long> usersByStatus = new HashMap<>();
-            usersByStatus.put("PENDING", userRepository.findByVerificationStatus(VerificationStatus.PENDING).size());
-            usersByStatus.put("VERIFIED", userRepository.findByVerificationStatus(VerificationStatus.VERIFIED).size());
-            usersByStatus.put("REJECTED", userRepository.findByVerificationStatus(VerificationStatus.REJECTED).size());
-            usersByStatus.put("SUSPENDED", userRepository.findByVerificationStatus(VerificationStatus.SUSPENDED).size());
+            usersByStatus.put("PENDING", (long) userRepository.findByVerificationStatus(VerificationStatus.PENDING).size());
+            usersByStatus.put("VERIFIED", (long) userRepository.findByVerificationStatus(VerificationStatus.VERIFIED).size());
+            usersByStatus.put("REJECTED", (long) userRepository.findByVerificationStatus(VerificationStatus.REJECTED).size());
+            usersByStatus.put("SUSPENDED", (long) userRepository.findByVerificationStatus(VerificationStatus.SUSPENDED).size());
             stats.put("usersByStatus", usersByStatus);
             
             // Active vs inactive users

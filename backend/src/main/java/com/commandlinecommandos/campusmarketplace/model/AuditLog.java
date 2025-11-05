@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -23,8 +21,6 @@ import java.util.UUID;
     @Index(name = "idx_audit_created", columnList = "created_at"),
     @Index(name = "idx_audit_record", columnList = "record_id")
 })
-@Data
-@NoArgsConstructor
 public class AuditLog {
     
     @Id
@@ -85,6 +81,10 @@ public class AuditLog {
         CRITICAL
     }
     
+    // Constructors
+    public AuditLog() {
+    }
+    
     // Constructor for quick audit log creation
     public AuditLog(User user, String tableName, String action, String description) {
         this.user = user;
@@ -93,5 +93,109 @@ public class AuditLog {
         this.action = action;
         this.description = description;
     }
-}
 
+    // Getters and Setters
+    public UUID getAuditId() {
+        return auditId;
+    }
+
+    public void setAuditId(UUID auditId) {
+        this.auditId = auditId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public UUID getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(UUID recordId) {
+        this.recordId = recordId;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public Map<String, Object> getOldValues() {
+        return oldValues;
+    }
+
+    public void setOldValues(Map<String, Object> oldValues) {
+        this.oldValues = oldValues;
+    }
+
+    public Map<String, Object> getNewValues() {
+        return newValues;
+    }
+
+    public void setNewValues(Map<String, Object> newValues) {
+        this.newValues = newValues;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public Severity getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(Severity severity) {
+        this.severity = severity;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+}
