@@ -19,7 +19,7 @@ import java.util.Map;
  * Handles forgot password and reset password with token
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Validated
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"}, maxAge = 3600)
 public class PasswordResetController {

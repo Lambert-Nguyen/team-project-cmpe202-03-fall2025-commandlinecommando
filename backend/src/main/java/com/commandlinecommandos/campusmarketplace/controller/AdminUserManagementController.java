@@ -24,7 +24,7 @@ import java.util.UUID;
  * Includes search, create, update, suspend, reactivate, delete, bulk operations
  */
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/admin/user-management")
 @Validated
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"}, maxAge = 3600)
 public class AdminUserManagementController {

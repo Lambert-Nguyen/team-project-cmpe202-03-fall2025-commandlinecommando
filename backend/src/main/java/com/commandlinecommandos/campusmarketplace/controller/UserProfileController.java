@@ -24,7 +24,7 @@ import java.util.UUID;
  * Handles profile viewing, updating, password changes, account deactivation
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @Validated
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"}, maxAge = 3600)
 public class UserProfileController {

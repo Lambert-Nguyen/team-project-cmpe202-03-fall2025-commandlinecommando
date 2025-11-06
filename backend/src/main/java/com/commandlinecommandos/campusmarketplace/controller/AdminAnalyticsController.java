@@ -20,7 +20,7 @@ import java.util.Map;
  * Admin controller for user analytics and reporting
  */
 @RestController
-@RequestMapping("/api/admin/analytics")
+@RequestMapping("/admin/analytics")
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"}, maxAge = 3600)
 public class AdminAnalyticsController {
     

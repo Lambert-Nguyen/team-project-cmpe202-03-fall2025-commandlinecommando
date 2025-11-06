@@ -72,6 +72,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/auth/refresh").permitAll()
                 .requestMatchers("/auth/logout").permitAll()
                 .requestMatchers("/auth/validate").permitAll()
+                .requestMatchers("/auth/forgot-password").permitAll()
+                .requestMatchers("/auth/reset-password").permitAll()
 
                 // Protected auth endpoints (authentication required)
                 .requestMatchers("/auth/me").authenticated()
