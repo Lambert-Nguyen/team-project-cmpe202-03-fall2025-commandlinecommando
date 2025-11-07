@@ -14,12 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -71,10 +73,14 @@ class UserProfileControllerIntegrationTest {
         testUser = userRepository.save(testUser);
     }
     
+    private UsernamePasswordAuthenticationToken createAuthentication(User user) {
+        return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+    }
+    
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testGetCurrentUserProfile_Success() throws Exception {
-        mockMvc.perform(get("/users/profile"))
+        mockMvc.perform(get("/users/profile")
+                .with(authentication(createAuthentication(testUser))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username").value("testuser"))
             .andExpect(jsonPath("$.email").value("test@test.edu"));
@@ -87,14 +93,14 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testUpdateProfile_Success() throws Exception {
         ProfileUpdateRequest request = new ProfileUpdateRequest();
         request.setFirstName("Updated");
         request.setLastName("Name");
-        request.setPhone("408-555-1234");
+        request.setPhone("4085551234"); // No hyphens - must match validation pattern
         
         mockMvc.perform(put("/users/profile")
+                .with(authentication(createAuthentication(testUser)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
@@ -103,7 +109,6 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testChangePassword_Success() throws Exception {
         PasswordChangeRequest request = new PasswordChangeRequest();
         request.setCurrentPassword("Password123!");
@@ -111,6 +116,7 @@ class UserProfileControllerIntegrationTest {
         request.setConfirmPassword("NewPassword123!");
         
         mockMvc.perform(post("/users/change-password")
+                .with(authentication(createAuthentication(testUser)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
@@ -118,9 +124,9 @@ class UserProfileControllerIntegrationTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
     void testDeactivateAccount_Success() throws Exception {
-        mockMvc.perform(post("/users/deactivate"))
+        mockMvc.perform(post("/users/deactivate")
+                .with(authentication(createAuthentication(testUser))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Account deactivated successfully"));
     }

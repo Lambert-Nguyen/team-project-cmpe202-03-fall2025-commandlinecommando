@@ -141,7 +141,7 @@ class UserManagementServiceTest {
         
         // Assert
         verify(userRepository, times(1)).findById(testUserId);
-        verify(passwordEncoder, times(1)).matches("oldPassword", testUser.getPassword());
+        verify(passwordEncoder, times(1)).matches("oldPassword", "encodedPassword");
         verify(passwordEncoder, times(1)).encode("NewSecure123!");
         verify(userRepository, times(1)).save(any(User.class));
         verify(emailService, times(1)).sendPasswordChangedEmail(testUser.getEmail(), testUser.getUsername());
