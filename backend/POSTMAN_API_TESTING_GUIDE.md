@@ -385,7 +385,59 @@ Content-Type: application/json
 - Status: 200 OK
 - Message returned (email would be sent in production)
 
-**💡 Note**: In development, check server logs for the reset token!
+**💡 Note**: Since we don't have a real SMTP server, the reset token is available through two methods:
+1. Check server console logs for highlighted token (see below)
+2. Use the Debug API endpoint (Test 9.5)
+
+**📋 Console Log Format**:
+```
+=====================================
+PASSWORD RESET TOKEN FOR TESTING
+Email: john@sjsu.edu
+Token: abc123...xyz
+Reset Link: http://localhost:3000/reset-password?token=abc123...xyz
+Token expires in 1 hour
+=====================================
+```
+
+---
+
+### Test 9.5: Get Reset Token via Debug API (NEW!)
+
+**Endpoint**: `GET http://localhost:8080/api/debug/reset-tokens`
+
+**⚠️ ADMIN AUTHENTICATION REQUIRED** - This is a debug endpoint!
+
+**Headers**:
+```
+Authorization: Bearer ADMIN_ACCESS_TOKEN
+```
+
+**No body required**
+
+**Expected Response** (200 OK):
+```json
+{
+  "activeTokens": [
+    {
+      "email": "john@sjsu.edu",
+      "username": "john_student",
+      "token": "abc123...xyz",
+      "expiresAt": "2024-11-07T19:30:00",
+      "createdAt": "2024-11-07T18:30:00"
+    }
+  ],
+  "count": 1,
+  "message": "Active password reset tokens for testing purposes"
+}
+```
+
+**✅ Success Indicators**:
+- Status: 200 OK
+- Array of active reset tokens with all details
+- Easy to copy the token for testing
+
+**💡 Pro Tip**: This endpoint only shows unexpired, unused PASSWORD_RESET tokens, making it perfect for testing!
 
 ---
 
@@ -405,7 +457,16 @@ Content-Type: application/json
 **Body** (raw JSON):
 ```json
 {
-  "token": "RESET_TOKEN_FROM_EMAIL",
+  "token": "PASTE_TOKEN_FROM_TEST_9.5_OR_CONSOLE",
+  "newPassword": "BrandNew1234!",
+  "confirmPassword": "BrandNew1234!"
+}
+```
+
+**Example with actual token**:
+```json
+{
+  "token": "abc123xyz...",
   "newPassword": "BrandNew1234!",
   "confirmPassword": "BrandNew1234!"
 }

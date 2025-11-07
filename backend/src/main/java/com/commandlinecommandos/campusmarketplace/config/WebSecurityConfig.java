@@ -86,6 +86,9 @@ public class WebSecurityConfig {
 
                 // Admin only endpoints (context path /api is already applied)
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                // Debug endpoints (admin only, development use)
+                .requestMatchers("/debug/**").hasRole("ADMIN")
 
                 // Student and Admin endpoints (context path /api is already applied)
                 .requestMatchers("/listings/**").hasAnyRole("STUDENT", "ADMIN")

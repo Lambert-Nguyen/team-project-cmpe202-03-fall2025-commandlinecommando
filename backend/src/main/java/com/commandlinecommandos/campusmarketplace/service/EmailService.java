@@ -40,6 +40,15 @@ public class EmailService {
         
         sendEmail(to, subject, body);
         logger.info("Password reset email sent to: {}", to);
+        
+        // Enhanced logging for development/testing
+        logger.info("=====================================");
+        logger.info("PASSWORD RESET TOKEN FOR TESTING");
+        logger.info("Email: {}", to);
+        logger.info("Token: {}", token);
+        logger.info("Reset Link: {}", resetLink);
+        logger.info("Token expires in 1 hour");
+        logger.info("=====================================");
     }
     
     /**
