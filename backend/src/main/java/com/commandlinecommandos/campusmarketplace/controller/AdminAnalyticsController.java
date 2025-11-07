@@ -36,6 +36,52 @@ public class AdminAnalyticsController {
     private AuditLogRepository auditLogRepository;
     
     /**
+     * Get analytics overview (simplified summary)
+     */
+    @GetMapping("/overview")
+    @RequireRole(UserRole.ADMIN)
+    public ResponseEntity<?> getOverview() {
+        try {
+            Map<String, Object> overview = new HashMap<>();
+            
+            // Total users
+            overview.put("totalUsers", userRepository.count());
+            
+            // Active users
+            overview.put("activeUsers", (long) userRepository.findByIsActiveTrue().size());
+            
+            // Suspended users (verification status SUSPENDED)
+            overview.put("suspendedUsers", (long) userRepository.findByVerificationStatus(VerificationStatus.SUSPENDED).size());
+            
+            // Students count
+            overview.put("studentsCount", userRepository.countByRole(UserRole.STUDENT));
+            
+            // Admins count
+            overview.put("adminsCount", userRepository.countByRole(UserRole.ADMIN));
+            
+            // New users this week (last 7 days)
+            LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+            long newUsersThisWeek = userRepository.findAll().stream()
+                .filter(u -> u.getCreatedAt().isAfter(sevenDaysAgo))
+                .count();
+            overview.put("newUsersThisWeek", newUsersThisWeek);
+            
+            // New users this month (last 30 days)
+            LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+            long newUsersThisMonth = userRepository.findAll().stream()
+                .filter(u -> u.getCreatedAt().isAfter(thirtyDaysAgo))
+                .count();
+            overview.put("newUsersThisMonth", newUsersThisMonth);
+            
+            return ResponseEntity.ok(overview);
+        } catch (Exception e) {
+            logger.error("Error getting analytics overview", e);
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to retrieve overview", "message", e.getMessage()));
+        }
+    }
+    
+    /**
      * Get user statistics dashboard
      */
     @GetMapping("/users")
