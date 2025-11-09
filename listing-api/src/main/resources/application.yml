@@ -67,6 +67,10 @@ management:
     health:
       show-details: when-authorized
 
+# Backend URL for proxy pattern
+backend:
+  url: ${BACKEND_URL:http://localhost:8080/api}
+
 ---
 # ==============================================
 # DEVELOPMENT PROFILE (H2 Database)
