@@ -2,9 +2,6 @@ package com.commandlinecommandos.campusmarketplace.dto;
 
 import com.commandlinecommandos.campusmarketplace.model.ProductCategory;
 import com.commandlinecommandos.campusmarketplace.model.ProductCondition;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,9 +11,6 @@ import java.util.List;
  * Search request DTO for product search
  * Includes filters, pagination, and sorting options
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class SearchRequest {
     
     /**
@@ -88,6 +82,87 @@ public class SearchRequest {
             sortBy != null ? sortBy : "relevance",
             page, 
             size);
+    }
+    
+    // Explicit getters and setters (Lombok fallback)
+    public String getQuery() {
+        return query;
+    }
+    
+    public void setQuery(String query) {
+        this.query = query;
+    }
+    
+    public List<ProductCategory> getCategories() {
+        return categories;
+    }
+    
+    public void setCategories(List<ProductCategory> categories) {
+        this.categories = categories;
+    }
+    
+    public List<ProductCondition> getConditions() {
+        return conditions;
+    }
+    
+    public void setConditions(List<ProductCondition> conditions) {
+        this.conditions = conditions;
+    }
+    
+    public BigDecimal getMinPrice() {
+        return minPrice;
+    }
+    
+    public void setMinPrice(BigDecimal minPrice) {
+        this.minPrice = minPrice;
+    }
+    
+    public BigDecimal getMaxPrice() {
+        return maxPrice;
+    }
+    
+    public void setMaxPrice(BigDecimal maxPrice) {
+        this.maxPrice = maxPrice;
+    }
+    
+    public String getLocation() {
+        return location;
+    }
+    
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    
+    public LocalDateTime getDateFrom() {
+        return dateFrom;
+    }
+    
+    public void setDateFrom(LocalDateTime dateFrom) {
+        this.dateFrom = dateFrom;
+    }
+    
+    public String getSortBy() {
+        return sortBy;
+    }
+    
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+    
+    public int getPage() {
+        return page;
+    }
+    
+    public void setPage(int page) {
+        this.page = page;
+    }
+    
+    public int getSize() {
+        return size;
+    }
+    
+    public void setSize(int size) {
+        this.size = size;
     }
 }
 

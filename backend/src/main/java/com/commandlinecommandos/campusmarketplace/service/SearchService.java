@@ -8,7 +8,8 @@ import com.commandlinecommandos.campusmarketplace.model.Product;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.ProductRepository;
 import com.commandlinecommandos.campusmarketplace.repository.ProductSpecifications;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -29,8 +30,9 @@ import java.util.stream.Collectors;
  * Provides full-text search, filtering, sorting, and autocomplete
  */
 @Service
-@Slf4j
 public class SearchService {
+    
+    private static final Logger log = LoggerFactory.getLogger(SearchService.class);
     
     @Autowired
     private ProductRepository productRepository;
@@ -197,50 +199,50 @@ public class SearchService {
             .map(this::transformToSearchResult)
             .collect(Collectors.toList());
         
-        SearchMetadata metadata = SearchMetadata.builder()
-            .searchTimeMs(System.currentTimeMillis() - startTime)
-            .appliedFilters(buildFilterDescription(request))
-            .totalFilters(countFilters(request))
-            .sortedBy(request.getSortBy())
-            .cached(cached)
-            .searchQuery(request.getQuery())
-            .build();
+        SearchMetadata metadata = new SearchMetadata(
+            System.currentTimeMillis() - startTime,
+            buildFilterDescription(request),
+            countFilters(request),
+            request.getSortBy(),
+            cached,
+            request.getQuery()
+        );
         
-        return SearchResponse.builder()
-            .results(results)
-            .totalResults(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .currentPage(page.getNumber())
-            .pageSize(page.getSize())
-            .hasNext(page.hasNext())
-            .hasPrevious(page.hasPrevious())
-            .metadata(metadata)
-            .build();
+        return new SearchResponse(
+            results,
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.getNumber(),
+            page.getSize(),
+            page.hasNext(),
+            page.hasPrevious(),
+            metadata
+        );
     }
     
     /**
      * Transform Product to ProductSearchResult
      */
     private ProductSearchResult transformToSearchResult(Product product) {
-        return ProductSearchResult.builder()
-            .productId(product.getProductId())
-            .title(product.getTitle())
-            .description(product.getDescription())
-            .price(product.getPrice())
-            .category(product.getCategory())
-            .condition(product.getCondition())
-            .sellerId(product.getSeller().getUserId())
-            .sellerName(product.getSeller().getFirstName() + " " + product.getSeller().getLastName())
-            .sellerUsername(product.getSeller().getUsername())
-            .location(product.getPickupLocation())
-            .viewCount(product.getViewCount())
-            .favoriteCount(product.getFavoriteCount())
-            .createdAt(product.getCreatedAt())
-            .imageUrls(List.of())  // TODO: Add image URLs when image service is implemented
-            .relevanceScore(null)  // Set from ts_rank if available
-            .negotiable(product.isNegotiable())
-            .quantity(product.getQuantity())
-            .build();
+        ProductSearchResult result = new ProductSearchResult();
+        result.setProductId(product.getProductId());
+        result.setTitle(product.getTitle());
+        result.setDescription(product.getDescription());
+        result.setPrice(product.getPrice());
+        result.setCategory(product.getCategory());
+        result.setCondition(product.getCondition());
+        result.setSellerId(product.getSeller().getUserId());
+        result.setSellerName(product.getSeller().getFirstName() + " " + product.getSeller().getLastName());
+        result.setSellerUsername(product.getSeller().getUsername());
+        result.setLocation(product.getPickupLocation());
+        result.setViewCount(product.getViewCount());
+        result.setFavoriteCount(product.getFavoriteCount());
+        result.setCreatedAt(product.getCreatedAt());
+        result.setImageUrls(List.of());  // TODO: Add image URLs when image service is implemented
+        result.setRelevanceScore(null);  // Set from ts_rank if available
+        result.setNegotiable(product.isNegotiable());
+        result.setQuantity(product.getQuantity());
+        return result;
     }
     
     /**

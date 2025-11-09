@@ -1,48 +1,77 @@
 package com.commandlinecommandos.campusmarketplace.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * Metadata about the search query execution
  * Provides information about search performance and applied filters
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SearchMetadata {
     
-    /**
-     * Search execution time in milliseconds
-     */
     private long searchTimeMs;
-    
-    /**
-     * Human-readable description of applied filters
-     */
     private String appliedFilters;
-    
-    /**
-     * Number of filters applied
-     */
     private int totalFilters;
-    
-    /**
-     * Sort criteria applied
-     */
     private String sortedBy;
-    
-    /**
-     * Whether results were served from cache
-     */
     private boolean cached;
-    
-    /**
-     * Search query that was executed
-     */
     private String searchQuery;
+    
+    public SearchMetadata() {
+    }
+    
+    public SearchMetadata(long searchTimeMs, String appliedFilters, int totalFilters,
+                         String sortedBy, boolean cached, String searchQuery) {
+        this.searchTimeMs = searchTimeMs;
+        this.appliedFilters = appliedFilters;
+        this.totalFilters = totalFilters;
+        this.sortedBy = sortedBy;
+        this.cached = cached;
+        this.searchQuery = searchQuery;
+    }
+    
+    public long getSearchTimeMs() {
+        return searchTimeMs;
+    }
+    
+    public void setSearchTimeMs(long searchTimeMs) {
+        this.searchTimeMs = searchTimeMs;
+    }
+    
+    public String getAppliedFilters() {
+        return appliedFilters;
+    }
+    
+    public void setAppliedFilters(String appliedFilters) {
+        this.appliedFilters = appliedFilters;
+    }
+    
+    public int getTotalFilters() {
+        return totalFilters;
+    }
+    
+    public void setTotalFilters(int totalFilters) {
+        this.totalFilters = totalFilters;
+    }
+    
+    public String getSortedBy() {
+        return sortedBy;
+    }
+    
+    public void setSortedBy(String sortedBy) {
+        this.sortedBy = sortedBy;
+    }
+    
+    public boolean isCached() {
+        return cached;
+    }
+    
+    public void setCached(boolean cached) {
+        this.cached = cached;
+    }
+    
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+    
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
+    }
 }
 

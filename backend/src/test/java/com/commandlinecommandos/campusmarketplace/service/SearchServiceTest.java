@@ -55,7 +55,7 @@ class SearchServiceTest {
         testUser = new User();
         testUser.setUsername("testuser");
         testUser.setEmail("test@test.edu");
-        testUser.setPasswordHash("hashed");
+        testUser.setPassword("hashed");
         testUser.setFirstName("Test");
         testUser.setLastName("User");
         testUser.setUniversity(testUniversity);

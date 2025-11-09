@@ -1,10 +1,6 @@
 package com.commandlinecommandos.campusmarketplace.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -20,10 +16,6 @@ import java.util.UUID;
     @Index(name = "idx_search_history_query", columnList = "search_query"),
     @Index(name = "idx_search_history_created", columnList = "created_at")
 })
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SearchHistory {
     
     @Id
@@ -44,5 +36,48 @@ public class SearchHistory {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+    
+    public SearchHistory() {
+    }
+    
+    // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+    
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public String getSearchQuery() {
+        return searchQuery;
+    }
+    
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
+    }
+    
+    public Integer getResultsCount() {
+        return resultsCount;
+    }
+    
+    public void setResultsCount(Integer resultsCount) {
+        this.resultsCount = resultsCount;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
-

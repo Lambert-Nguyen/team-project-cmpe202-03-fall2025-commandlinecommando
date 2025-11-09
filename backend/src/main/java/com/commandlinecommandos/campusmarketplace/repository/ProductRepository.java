@@ -180,22 +180,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
                                Pageable pageable);
     
     /**
-     * Find recommended products by category
-     * Used for discovery recommendations
-     * 
-     * @param university University
-     * @param category Product category
-     * @param pageable Pagination
-     * @return Page of products in category
-     */
-    Page<Product> findByUniversityAndCategoryAndIsActiveTrueAndModerationStatus(
-        University university,
-        ProductCategory category,
-        ModerationStatus moderationStatus,
-        Pageable pageable
-    );
-    
-    /**
      * Find products created after a certain date
      * Used for "recent" filters (last 24h, 7d, 30d, 90d)
      * 

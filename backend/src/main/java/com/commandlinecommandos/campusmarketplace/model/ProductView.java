@@ -1,10 +1,6 @@
 package com.commandlinecommandos.campusmarketplace.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,10 +27,6 @@ import java.util.UUID;
         )
     }
 )
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProductView {
     
     @Id
@@ -56,6 +48,9 @@ public class ProductView {
     @Column(name = "viewed_at_date", nullable = false)
     private LocalDate viewedAtDate;
     
+    public ProductView() {
+    }
+    
     /**
      * Set default values before persisting
      */
@@ -68,5 +63,45 @@ public class ProductView {
             viewedAtDate = LocalDate.now();
         }
     }
+    
+    // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
+    
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public Product getProduct() {
+        return product;
+    }
+    
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+    
+    public LocalDateTime getViewedAt() {
+        return viewedAt;
+    }
+    
+    public void setViewedAt(LocalDateTime viewedAt) {
+        this.viewedAt = viewedAt;
+    }
+    
+    public LocalDate getViewedAtDate() {
+        return viewedAtDate;
+    }
+    
+    public void setViewedAtDate(LocalDate viewedAtDate) {
+        this.viewedAtDate = viewedAtDate;
+    }
 }
-

@@ -4,7 +4,8 @@ import com.commandlinecommandos.campusmarketplace.model.SearchHistory;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.SearchHistoryRepository;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,9 @@ import java.util.UUID;
  * Tracks user searches for analytics and recent searches feature
  */
 @Service
-@Slf4j
 public class SearchHistoryService {
+    
+    private static final Logger log = LoggerFactory.getLogger(SearchHistoryService.class);
     
     @Autowired
     private SearchHistoryRepository searchHistoryRepository;
@@ -49,11 +51,10 @@ public class SearchHistoryService {
                 return;
             }
             
-            SearchHistory searchHistory = SearchHistory.builder()
-                .user(user)
-                .searchQuery(query.trim())
-                .resultsCount(resultsCount)
-                .build();
+            SearchHistory searchHistory = new SearchHistory();
+            searchHistory.setUser(user);
+            searchHistory.setSearchQuery(query.trim());
+            searchHistory.setResultsCount(resultsCount);
                 
             searchHistoryRepository.save(searchHistory);
             log.debug("Saved search history for user {}: query={}, results={}", 

@@ -2,6 +2,7 @@ package com.commandlinecommandos.campusmarketplace.controller;
 
 import com.commandlinecommandos.campusmarketplace.dto.SearchRequest;
 import com.commandlinecommandos.campusmarketplace.dto.SearchResponse;
+import com.commandlinecommandos.campusmarketplace.exception.UnauthorizedException;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.security.JwtUtil;
@@ -9,10 +10,10 @@ import com.commandlinecommandos.campusmarketplace.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +25,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/search")
 @Tag(name = "Search", description = "Product search and discovery endpoints")
-@Slf4j
 public class SearchController {
+    
+    private static final Logger log = LoggerFactory.getLogger(SearchController.class);
     
     @Autowired
     private SearchService searchService;
@@ -59,7 +61,7 @@ public class SearchController {
                     user.getUsername(), request.getQuery(), response.getTotalResults());
             
             return ResponseEntity.ok(response);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized search attempt: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -95,7 +97,7 @@ public class SearchController {
             
             log.debug("Autocomplete: query='{}', suggestions={}", q, suggestions.size());
             return ResponseEntity.ok(suggestions);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized autocomplete attempt: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -123,7 +125,7 @@ public class SearchController {
             
             log.debug("Search history: user={}, items={}", user.getUsername(), history.size());
             return ResponseEntity.ok(history);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized search history attempt: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -137,22 +139,22 @@ public class SearchController {
      * 
      * @param authHeader Authorization header with Bearer token
      * @return User object
-     * @throws AuthenticationException if token is invalid or user not found
+     * @throws UnauthorizedException if token is invalid or user not found
      */
-    private User getCurrentUser(String authHeader) throws AuthenticationException {
+    private User getCurrentUser(String authHeader) throws UnauthorizedException {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new AuthenticationException("Invalid authorization header");
+            throw new UnauthorizedException("Invalid authorization header");
         }
         
         String token = authHeader.substring(7);  // Remove "Bearer " prefix
         String username = jwtUtil.extractUsername(token);
         
         if (username == null) {
-            throw new AuthenticationException("Invalid token");
+            throw new UnauthorizedException("Invalid token");
         }
         
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new AuthenticationException("User not found"));
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
     }
 }
 

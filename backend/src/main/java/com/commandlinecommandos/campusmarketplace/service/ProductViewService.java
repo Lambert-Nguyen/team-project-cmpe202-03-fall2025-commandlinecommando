@@ -5,7 +5,8 @@ import com.commandlinecommandos.campusmarketplace.model.ProductView;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.ProductRepository;
 import com.commandlinecommandos.campusmarketplace.repository.ProductViewRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
@@ -23,8 +24,9 @@ import java.util.UUID;
  * Handles asynchronous view tracking and recently viewed items
  */
 @Service
-@Slf4j
 public class ProductViewService {
+    
+    private static final Logger log = LoggerFactory.getLogger(ProductViewService.class);
     
     @Autowired
     private ProductViewRepository productViewRepository;
@@ -58,12 +60,11 @@ public class ProductViewService {
                          user.getUserId(), product.getProductId());
             } else {
                 // Create new view record
-                ProductView view = ProductView.builder()
-                    .user(user)
-                    .product(product)
-                    .viewedAt(now)
-                    .viewedAtDate(today)
-                    .build();
+                ProductView view = new ProductView();
+                view.setUser(user);
+                view.setProduct(product);
+                view.setViewedAt(now);
+                view.setViewedAtDate(today);
                     
                 productViewRepository.save(view);
                 

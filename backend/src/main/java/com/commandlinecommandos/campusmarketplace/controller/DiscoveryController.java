@@ -1,6 +1,7 @@
 package com.commandlinecommandos.campusmarketplace.controller;
 
 import com.commandlinecommandos.campusmarketplace.dto.ProductSummary;
+import com.commandlinecommandos.campusmarketplace.exception.UnauthorizedException;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.security.JwtUtil;
@@ -8,10 +9,10 @@ import com.commandlinecommandos.campusmarketplace.service.DiscoveryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +25,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/discovery")
 @Tag(name = "Discovery", description = "Product discovery and recommendation endpoints")
-@Slf4j
 public class DiscoveryController {
+    
+    private static final Logger log = LoggerFactory.getLogger(DiscoveryController.class);
     
     @Autowired
     private DiscoveryService discoveryService;
@@ -59,7 +61,7 @@ public class DiscoveryController {
             
             log.debug("Trending items: user={}, count={}", user.getUsername(), trending.size());
             return ResponseEntity.ok(trending);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized trending request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -90,7 +92,7 @@ public class DiscoveryController {
             
             log.debug("Recommended items: user={}, count={}", user.getUsername(), recommended.size());
             return ResponseEntity.ok(recommended);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized recommended request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -128,7 +130,7 @@ public class DiscoveryController {
             
             log.debug("Similar items: productId={}, count={}", productId, similar.size());
             return ResponseEntity.ok(similar);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Invalid token for similar request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -158,7 +160,7 @@ public class DiscoveryController {
             
             log.debug("Recently viewed: user={}, count={}", user.getUsername(), recentlyViewed.size());
             return ResponseEntity.ok(recentlyViewed);
-        } catch (AuthenticationException e) {
+        } catch (UnauthorizedException e) {
             log.warn("Unauthorized recently-viewed request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
@@ -172,22 +174,22 @@ public class DiscoveryController {
      * 
      * @param authHeader Authorization header with Bearer token
      * @return User object
-     * @throws AuthenticationException if token is invalid or user not found
+     * @throws UnauthorizedException if token is invalid or user not found
      */
-    private User getCurrentUser(String authHeader) throws AuthenticationException {
+    private User getCurrentUser(String authHeader) throws UnauthorizedException {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new AuthenticationException("Invalid authorization header");
+            throw new UnauthorizedException("Invalid authorization header");
         }
         
         String token = authHeader.substring(7);  // Remove "Bearer " prefix
         String username = jwtUtil.extractUsername(token);
         
         if (username == null) {
-            throw new AuthenticationException("Invalid token");
+            throw new UnauthorizedException("Invalid token");
         }
         
         return userRepository.findByUsername(username)
-            .orElseThrow(() -> new AuthenticationException("User not found"));
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
     }
 }
 

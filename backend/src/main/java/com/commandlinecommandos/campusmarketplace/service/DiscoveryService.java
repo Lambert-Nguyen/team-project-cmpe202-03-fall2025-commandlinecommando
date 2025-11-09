@@ -7,7 +7,8 @@ import com.commandlinecommandos.campusmarketplace.model.ProductCategory;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.ProductRepository;
 import com.commandlinecommandos.campusmarketplace.repository.ProductViewRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +24,9 @@ import java.util.stream.Collectors;
  * Provides trending, recommended, similar, and recently viewed items
  */
 @Service
-@Slf4j
 public class DiscoveryService {
+    
+    private static final Logger log = LoggerFactory.getLogger(DiscoveryService.class);
     
     @Autowired
     private ProductRepository productRepository;
@@ -217,22 +219,23 @@ public class DiscoveryService {
      * Transform Product to ProductSummary
      */
     private ProductSummary transformToSummary(Product product) {
-        return ProductSummary.builder()
-            .productId(product.getProductId())
-            .title(product.getTitle())
-            .description(product.getDescription())
-            .price(product.getPrice())
-            .category(product.getCategory())
-            .condition(product.getCondition())
-            .imageUrl(null)  // TODO: Add primary image URL when image service is implemented
-            .viewCount(product.getViewCount())
-            .favoriteCount(product.getFavoriteCount())
-            .createdAt(product.getCreatedAt())
-            .sellerId(product.getSeller().getUserId())
-            .sellerName(product.getSeller().getFirstName() + " " + product.getSeller().getLastName())
-            .negotiable(product.isNegotiable())
-            .quantity(product.getQuantity())
-            .build();
+        ProductSummary summary = new ProductSummary();
+        summary.setProductId(product.getProductId());
+        summary.setTitle(product.getTitle());
+        summary.setDescription(product.getDescription());
+        summary.setPrice(product.getPrice());
+        summary.setCategory(product.getCategory());
+        summary.setCondition(product.getCondition());
+        summary.setImageUrls(List.of());  // TODO: Add image URLs when image service is implemented
+        summary.setViewCount(product.getViewCount());
+        summary.setFavoriteCount(product.getFavoriteCount());
+        summary.setCreatedAt(product.getCreatedAt());
+        summary.setSellerId(product.getSeller().getUserId());
+        summary.setSellerUsername(product.getSeller().getUsername());
+        summary.setLocation(product.getPickupLocation());
+        summary.setNegotiable(product.isNegotiable());
+        summary.setQuantity(product.getQuantity());
+        return summary;
     }
 }
 
