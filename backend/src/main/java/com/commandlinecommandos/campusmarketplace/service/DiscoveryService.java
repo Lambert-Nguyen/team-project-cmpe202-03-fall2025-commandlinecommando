@@ -4,9 +4,11 @@ import com.commandlinecommandos.campusmarketplace.dto.ProductSummary;
 import com.commandlinecommandos.campusmarketplace.model.ModerationStatus;
 import com.commandlinecommandos.campusmarketplace.model.Product;
 import com.commandlinecommandos.campusmarketplace.model.ProductCategory;
+import com.commandlinecommandos.campusmarketplace.model.University;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.ProductRepository;
 import com.commandlinecommandos.campusmarketplace.repository.ProductViewRepository;
+import com.commandlinecommandos.campusmarketplace.repository.UniversityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ public class DiscoveryService {
     @Autowired
     private ProductViewRepository productViewRepository;
     
+    @Autowired
+    private UniversityRepository universityRepository;
+    
     /**
      * Get trending products for a university
      * Based on view count and favorite count
@@ -46,10 +51,13 @@ public class DiscoveryService {
     @Cacheable(value = "trendingItems", key = "#universityId + '_' + #limit")
     public List<ProductSummary> getTrendingItems(UUID universityId, int limit) {
         try {
-            // Get top products by views (from existing repository method)
-            // Note: findTopByViews takes University entity, need to convert
+            // Get University entity
+            University university = universityRepository.findById(universityId)
+                .orElseThrow(() -> new RuntimeException("University not found"));
+            
+            // Get top products by views
             List<Product> products = productRepository.findTopByViews(
-                null,  // Would need University entity here
+                university,
                 PageRequest.of(0, limit)
             );
             

@@ -1,6 +1,11 @@
 package com.commandlinecommandos.campusmarketplace.controller;
 
 import com.commandlinecommandos.campusmarketplace.dto.ProductSummary;
+import com.commandlinecommandos.campusmarketplace.dto.TrendingResponse;
+import com.commandlinecommandos.campusmarketplace.dto.RecommendedResponse;
+import com.commandlinecommandos.campusmarketplace.dto.SimilarResponse;
+import com.commandlinecommandos.campusmarketplace.dto.RecentlyViewedResponse;
+import com.commandlinecommandos.campusmarketplace.dto.ErrorResponse;
 import com.commandlinecommandos.campusmarketplace.exception.UnauthorizedException;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
@@ -49,24 +54,30 @@ public class DiscoveryController {
     @GetMapping("/trending")
     @Operation(summary = "Get trending products",
                description = "Get trending products based on views and favorites")
-    public ResponseEntity<List<ProductSummary>> getTrending(
+    public ResponseEntity<?> getTrending(
             @Parameter(description = "Maximum number of products") 
             @RequestParam(defaultValue = "10") int limit,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
         
         try {
+            // Check authentication FIRST
             User user = getCurrentUser(token);
+            
+            // Then validate limit
+            if (limit < 1 || limit > 50) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("limit must be between 1 and 50"));
+            }
             List<ProductSummary> trending = discoveryService.getTrendingItems(
                 user.getUniversity().getUniversityId(), limit);
             
             log.debug("Trending items: user={}, count={}", user.getUsername(), trending.size());
-            return ResponseEntity.ok(trending);
+            return ResponseEntity.ok(new TrendingResponse(trending));
         } catch (UnauthorizedException e) {
             log.warn("Unauthorized trending request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             log.error("Trending error: {}", e.getMessage(), e);
-            return ResponseEntity.ok(List.of());  // Return empty list on error
+            return ResponseEntity.ok(new TrendingResponse(List.of()));
         }
     }
     
@@ -81,7 +92,7 @@ public class DiscoveryController {
     @GetMapping("/recommended")
     @Operation(summary = "Get recommended products",
                description = "Get personalized product recommendations based on browsing history")
-    public ResponseEntity<List<ProductSummary>> getRecommended(
+    public ResponseEntity<RecommendedResponse> getRecommended(
             @Parameter(description = "Maximum number of products") 
             @RequestParam(defaultValue = "10") int limit,
             @RequestHeader("Authorization") String token) {
@@ -91,13 +102,13 @@ public class DiscoveryController {
             List<ProductSummary> recommended = discoveryService.getRecommendedItems(user, limit);
             
             log.debug("Recommended items: user={}, count={}", user.getUsername(), recommended.size());
-            return ResponseEntity.ok(recommended);
+            return ResponseEntity.ok(new RecommendedResponse(recommended));
         } catch (UnauthorizedException e) {
             log.warn("Unauthorized recommended request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             log.error("Recommended error: {}", e.getMessage(), e);
-            return ResponseEntity.ok(List.of());  // Return empty list on error
+            return ResponseEntity.ok(new RecommendedResponse(List.of()));
         }
     }
     
@@ -113,7 +124,7 @@ public class DiscoveryController {
     @GetMapping("/similar/{productId}")
     @Operation(summary = "Get similar products",
                description = "Get products similar to a specific product")
-    public ResponseEntity<List<ProductSummary>> getSimilar(
+    public ResponseEntity<SimilarResponse> getSimilar(
             @Parameter(description = "Product UUID") 
             @PathVariable UUID productId,
             @Parameter(description = "Maximum number of products") 
@@ -129,13 +140,13 @@ public class DiscoveryController {
             List<ProductSummary> similar = discoveryService.getSimilarItems(productId, limit);
             
             log.debug("Similar items: productId={}, count={}", productId, similar.size());
-            return ResponseEntity.ok(similar);
+            return ResponseEntity.ok(new SimilarResponse(similar));
         } catch (UnauthorizedException e) {
             log.warn("Invalid token for similar request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             log.error("Similar items error: productId={}, error={}", productId, e.getMessage(), e);
-            return ResponseEntity.ok(List.of());  // Return empty list on error
+            return ResponseEntity.ok(new SimilarResponse(List.of()));
         }
     }
     
@@ -149,7 +160,7 @@ public class DiscoveryController {
     @GetMapping("/recently-viewed")
     @Operation(summary = "Get recently viewed products",
                description = "Get products recently viewed by the current user")
-    public ResponseEntity<List<ProductSummary>> getRecentlyViewed(
+    public ResponseEntity<RecentlyViewedResponse> getRecentlyViewed(
             @Parameter(description = "Maximum number of products") 
             @RequestParam(defaultValue = "10") int limit,
             @RequestHeader("Authorization") String token) {
@@ -159,13 +170,13 @@ public class DiscoveryController {
             List<ProductSummary> recentlyViewed = discoveryService.getRecentlyViewedItems(user, limit);
             
             log.debug("Recently viewed: user={}, count={}", user.getUsername(), recentlyViewed.size());
-            return ResponseEntity.ok(recentlyViewed);
+            return ResponseEntity.ok(new RecentlyViewedResponse(recentlyViewed));
         } catch (UnauthorizedException e) {
             log.warn("Unauthorized recently-viewed request: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             log.error("Recently viewed error: {}", e.getMessage(), e);
-            return ResponseEntity.ok(List.of());  // Return empty list on error
+            return ResponseEntity.ok(new RecentlyViewedResponse(List.of()));
         }
     }
     

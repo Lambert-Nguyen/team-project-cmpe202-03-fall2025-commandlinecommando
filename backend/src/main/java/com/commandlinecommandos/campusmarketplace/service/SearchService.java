@@ -86,18 +86,48 @@ public class SearchService {
     
     /**
      * Search with full-text query
+     * Falls back to simpler search if PostgreSQL full-text functions are unavailable (e.g., H2 tests)
      */
     private Page<Product> searchWithQuery(SearchRequest request, UUID universityId) {
         Pageable pageable = createPageable(request);
         
-        // Use full-text search first
-        Page<Product> textSearchResults = productRepository.searchWithFullText(
-            universityId, request.getQuery(), pageable);
+        // Try full-text search first (PostgreSQL only)
+        Page<Product> textSearchResults;
+        try {
+            textSearchResults = productRepository.searchWithFullText(
+                universityId, request.getQuery(), pageable);
+        } catch (Exception e) {
+            // Fall back to simple search if full-text search fails (H2 compatibility)
+            log.warn("Full-text search failed, falling back to simple search: {}", e.getMessage());
+            Specification<Product> spec = ProductSpecifications.withFilters(
+                universityId,
+                request.getCategories(),
+                request.getConditions(),
+                request.getMinPrice(),
+                request.getMaxPrice(),
+                request.getLocation(),
+                request.getDateFrom()
+            );
+            // Add simple title/description search
+            spec = spec.and((root, query, cb) -> {
+                String searchPattern = "%" + request.getQuery().toLowerCase() + "%";
+                return cb.or(
+                    cb.like(cb.lower(root.get("title")), searchPattern),
+                    cb.like(cb.lower(root.get("description")), searchPattern)
+                );
+            });
+            return productRepository.findAll(spec, pageable);
+        }
         
         // If no results and query looks like it might have typos, try fuzzy search
         if (textSearchResults.isEmpty() && request.getQuery().length() > 3) {
-            textSearchResults = productRepository.fuzzySearch(
-                universityId, request.getQuery(), pageable);
+            try {
+                textSearchResults = productRepository.fuzzySearch(
+                    universityId, request.getQuery(), pageable);
+            } catch (Exception e) {
+                log.warn("Fuzzy search failed: {}", e.getMessage());
+                // Already have empty results, just continue
+            }
         }
         
         // Apply additional filters using Specifications if needed

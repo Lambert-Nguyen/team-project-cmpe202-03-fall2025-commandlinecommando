@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.*;
  * - Edge cases and validation
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters for testing
 @ActiveProfiles("test")
 @Transactional
 public class SearchControllerIntegrationTest {

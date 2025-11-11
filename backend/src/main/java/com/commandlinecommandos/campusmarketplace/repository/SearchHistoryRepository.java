@@ -29,6 +29,13 @@ public interface SearchHistoryRepository extends JpaRepository<SearchHistory, UU
     List<String> findRecentSearchesByUser(@Param("user") User user, @Param("limit") int limit);
     
     /**
+     * Find recent search history entities for a user
+     * @param user The user
+     * @return List of SearchHistory entities ordered by most recent
+     */
+    List<SearchHistory> findByUserOrderByCreatedAtDesc(User user);
+    
+    /**
      * Find popular search queries (for autocomplete suggestions)
      * @param limit Maximum number of results
      * @return List of popular search queries

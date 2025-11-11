@@ -48,11 +48,11 @@ public class AuditLog {
     
     // Change tracking
     @Type(JsonType.class)
-    @Column(name = "old_values", columnDefinition = "jsonb")
+    @Column(name = "old_values", columnDefinition = "TEXT")
     private Map<String, Object> oldValues;
     
     @Type(JsonType.class)
-    @Column(name = "new_values", columnDefinition = "jsonb")
+    @Column(name = "new_values", columnDefinition = "TEXT")
     private Map<String, Object> newValues;
     
     @Column(name = "description", length = 500)

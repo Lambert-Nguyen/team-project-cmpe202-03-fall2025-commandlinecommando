@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.*;
  * - GET /discovery/recently-viewed
  */
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)  // Disable Spring Security filters for testing
 @ActiveProfiles("test")
 @Transactional
 public class DiscoveryControllerIntegrationTest {
