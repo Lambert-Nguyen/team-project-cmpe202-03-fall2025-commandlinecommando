@@ -99,12 +99,14 @@ class ReportControllerTest {
         when(reportService.getAllReports(any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getAllReports(0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getAllReports(0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getAllReports(any(Pageable.class));
     }
 
@@ -114,7 +116,7 @@ class ReportControllerTest {
         when(reportService.getAllReports(any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getAllReports(1, 10, "reportId", "asc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getAllReports(1, 10, "reportId", "asc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -145,7 +147,7 @@ class ReportControllerTest {
             .thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.searchReports(
+        ResponseEntity<?> response = reportController.searchReports(
             ReportStatus.PENDING, 1L, 2L, ReportType.SPAM, 3L,
             0, 20, "createdAt", "desc", mockRequestAdmin
         );
@@ -153,7 +155,9 @@ class ReportControllerTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).searchReports(
             eq(ReportStatus.PENDING), eq(1L), eq(2L), eq(ReportType.SPAM), eq(3L), any(Pageable.class));
     }
@@ -166,7 +170,7 @@ class ReportControllerTest {
             .thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.searchReports(
+        ResponseEntity<?> response = reportController.searchReports(
             null, null, null, null, null,
             0, 20, "createdAt", "desc", mockRequestAdmin
         );
@@ -200,12 +204,14 @@ class ReportControllerTest {
         when(reportService.getPendingReports(any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getPendingReports(0, 20, "createdAt", "asc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getPendingReports(0, 20, "createdAt", "asc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getPendingReports(any(Pageable.class));
     }
 
@@ -228,12 +234,14 @@ class ReportControllerTest {
         when(reportService.getReportsByReporterId(eq(1L), any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getReportsByReporterId(1L, 0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getReportsByReporterId(1L, 0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getReportsByReporterId(eq(1L), any(Pageable.class));
     }
 
@@ -256,12 +264,14 @@ class ReportControllerTest {
         when(reportService.getReportsByListingId(eq(2L), any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getReportsByListingId(2L, 0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getReportsByListingId(2L, 0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getReportsByListingId(eq(2L), any(Pageable.class));
     }
 
@@ -284,12 +294,14 @@ class ReportControllerTest {
         when(reportService.getReportsByReportType(eq(ReportType.SPAM), any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getReportsByType(ReportType.SPAM, 0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getReportsByType(ReportType.SPAM, 0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getReportsByReportType(eq(ReportType.SPAM), any(Pageable.class));
     }
 
@@ -312,12 +324,14 @@ class ReportControllerTest {
         when(reportService.getReportsByStatus(eq(ReportStatus.PENDING), any(Pageable.class))).thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getReportsByStatus(ReportStatus.PENDING, 0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getReportsByStatus(ReportStatus.PENDING, 0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(1, page.getTotalElements());
         verify(reportService).getReportsByStatus(eq(ReportStatus.PENDING), any(Pageable.class));
     }
 
@@ -680,7 +694,7 @@ class ReportControllerTest {
             .thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.searchReports(
+        ResponseEntity<?> response = reportController.searchReports(
             ReportStatus.PENDING, null, null, null, null,
             0, 20, "createdAt", "desc", mockRequestAdmin
         );
@@ -699,7 +713,7 @@ class ReportControllerTest {
             .thenReturn(testPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.searchReports(
+        ResponseEntity<?> response = reportController.searchReports(
             null, 1L, null, null, null,
             0, 20, "createdAt", "desc", mockRequestAdmin
         );
@@ -763,12 +777,14 @@ class ReportControllerTest {
         when(reportService.getAllReports(any(Pageable.class))).thenReturn(emptyPage);
 
         // Act
-        ResponseEntity<Page<?>> response = reportController.getAllReports(0, 20, "createdAt", "desc", mockRequestAdmin);
+        ResponseEntity<?> response = reportController.getAllReports(0, 20, "createdAt", "desc", mockRequestAdmin);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(0, response.getBody().getTotalElements());
+        assertTrue(response.getBody() instanceof Page);
+        Page<Report> page = (Page<Report>) response.getBody();
+        assertEquals(0, page.getTotalElements());
         verify(reportService).getAllReports(any(Pageable.class));
     }
 }

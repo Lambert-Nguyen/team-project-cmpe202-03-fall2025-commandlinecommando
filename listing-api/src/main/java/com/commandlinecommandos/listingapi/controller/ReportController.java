@@ -46,7 +46,7 @@ public class ReportController {
     private JwtHelper jwtHelper;
 
     @GetMapping
-    public ResponseEntity<Page<?>> getAllReports(
+    public ResponseEntity<?> getAllReports(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -55,8 +55,10 @@ public class ReportController {
 
         logger.info("Received request to get all reports - page: {}, size: {}, sortBy: {}, sortDirection: {}", 
                    page, size, sortBy, sortDirection);
-        
-        verifyAdmin(httpRequest);
+
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getAllReports(pageable);
@@ -68,7 +70,7 @@ public class ReportController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<?>> searchReports(
+    public ResponseEntity<?> searchReports(
             @RequestParam(required = false) ReportStatus status,
             @RequestParam(required = false) Long reporterId,
             @RequestParam(required = false) Long listingId,
@@ -83,7 +85,9 @@ public class ReportController {
         logger.info("Received search request - status: {}, reporterId: {}, listingId: {}, reportType: {}, reviewedBy: {}, page: {}, size: {}", 
                    status, reporterId, listingId, reportType, reviewedBy, page, size);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.searchReports(status, reporterId, listingId, reportType, reviewedBy, pageable);
@@ -95,7 +99,7 @@ public class ReportController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<Page<?>> getPendingReports(
+    public ResponseEntity<?> getPendingReports(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -105,7 +109,9 @@ public class ReportController {
         logger.info("Received request to get pending reports - page: {}, size: {}, sortBy: {}", 
                    page, size, sortBy);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getPendingReports(pageable);
@@ -117,7 +123,7 @@ public class ReportController {
     }
 
     @GetMapping("/reporter/{reporterId}")
-    public ResponseEntity<Page<?>> getReportsByReporterId(
+    public ResponseEntity<?> getReportsByReporterId(
             @PathVariable Long reporterId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -128,7 +134,9 @@ public class ReportController {
         logger.info("Received request to get reports for reporter ID: {} - page: {}, size: {}, sortBy: {}", 
                    reporterId, page, size, sortBy);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getReportsByReporterId(reporterId, pageable);
@@ -140,7 +148,7 @@ public class ReportController {
     }
 
     @GetMapping("/listing/{listingId}")
-    public ResponseEntity<Page<?>> getReportsByListingId(
+    public ResponseEntity<?> getReportsByListingId(
             @PathVariable Long listingId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -151,7 +159,9 @@ public class ReportController {
         logger.info("Received request to get reports for listing ID: {} - page: {}, size: {}, sortBy: {}", 
                    listingId, page, size, sortBy);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getReportsByListingId(listingId, pageable);
@@ -163,7 +173,7 @@ public class ReportController {
     }
 
     @GetMapping("/type/{reportType}")
-    public ResponseEntity<Page<?>> getReportsByType(
+    public ResponseEntity<?> getReportsByType(
             @PathVariable ReportType reportType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -174,7 +184,9 @@ public class ReportController {
         logger.info("Received request to get reports for type: {} - page: {}, size: {}, sortBy: {}", 
                    reportType, page, size, sortBy);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getReportsByReportType(reportType, pageable);
@@ -186,7 +198,7 @@ public class ReportController {
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<Page<?>> getReportsByStatus(
+    public ResponseEntity<?> getReportsByStatus(
             @PathVariable ReportStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -197,7 +209,9 @@ public class ReportController {
         logger.info("Received request to get reports for status: {} - page: {}, size: {}, sortBy: {}", 
                    status, page, size, sortBy);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
         Page<Report> reports = reportService.getReportsByStatus(status, pageable);
@@ -212,7 +226,9 @@ public class ReportController {
     public ResponseEntity<?> getReportById(@PathVariable Long reportId, HttpServletRequest httpRequest) {
         logger.info("Received request to get report by ID: {}", reportId);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Report report = reportService.getReportById(reportId);
         logger.info("Successfully retrieved report ID: {} - type: {}, status: {}, reporter: {}", 
@@ -248,7 +264,9 @@ public class ReportController {
         logger.info("Received request to update report ID: {} - type: '{}'", 
                    reportId, request.getReportType());
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Report updatedReport = reportService.updateReport(reportId, request.getReportType(), request.getDescription());
         
@@ -262,7 +280,9 @@ public class ReportController {
     public ResponseEntity<?> markAsReviewed(@PathVariable Long reportId, HttpServletRequest httpRequest) {
         logger.info("Received request to mark report ID: {} as reviewed", reportId);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
 
         Long reviewerId = jwtHelper.extractUserIdFromRequest(httpRequest);
         if (reviewerId == null) {
@@ -281,7 +301,9 @@ public class ReportController {
     public ResponseEntity<?> markAsResolved(@PathVariable Long reportId, HttpServletRequest httpRequest) {
         logger.info("Received request to mark report ID: {} as resolved", reportId);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Report updatedReport = reportService.markAsResolved(reportId);
         logger.info("Successfully marked report ID: {} as resolved - status changed to: {}", 
@@ -303,7 +325,9 @@ public class ReportController {
     public ResponseEntity<?> markAsDismissed(@PathVariable Long reportId, HttpServletRequest httpRequest) {
         logger.info("Received request to mark report ID: {} as dismissed", reportId);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Report updatedReport = reportService.markAsDismissed(reportId);
         logger.info("Successfully marked report ID: {} as dismissed - status changed to: {}", 
@@ -316,7 +340,9 @@ public class ReportController {
     public ResponseEntity<String> deleteReport(@PathVariable Long reportId, HttpServletRequest httpRequest) {
         logger.info("Received request to delete report ID: {}", reportId);
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         reportService.deleteReport(reportId);
         logger.info("Successfully deleted report ID: {}", reportId);
@@ -328,7 +354,9 @@ public class ReportController {
     public ResponseEntity<?> getReportCounts(HttpServletRequest httpRequest) {
         logger.info("Received request to get report counts");
         
-        verifyAdmin(httpRequest);
+        if (!verifyAdmin(httpRequest)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to access this resource");
+        }
         
         Long pendingCount = reportService.countReportsByStatus(ReportStatus.PENDING);
         Long underReviewCount = reportService.countReportsByStatus(ReportStatus.UNDER_REVIEW);
