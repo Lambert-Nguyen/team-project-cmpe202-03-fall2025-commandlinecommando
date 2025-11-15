@@ -70,7 +70,7 @@ docker exec -it postgres psql -U marketplace_user -d marketplace_db -c "SELECT 1
 | Variable | Initial Value | Current Value |
 |----------|---------------|---------------|
 | `base_url` | `http://localhost:8080/api` | `http://localhost:8080/api` |
-| `listing_api_url` | `http://localhost:8081` | `http://localhost:8081` |
+| `listing_api_url` | `http://localhost:8100` | `http://localhost:8100` |
 | `auth_token` | (leave empty) | (will be auto-set) |
 | `user_id` | (leave empty) | (will be auto-set) |
 | `product_id` | (leave empty) | (for testing) |

@@ -103,7 +103,7 @@ Epic 3 delivers comprehensive search and discovery capabilities for the Campus M
          ▼                        ▼
 ┌─────────────────┐      ┌──────────────────┐
 │  Listing-API    │      │  Backend API     │
-│  (Port 8081)    │◄────►│  (Port 8080)     │
+│  (Port 8100)    │◄────►│  (Port 8080)     │
 │  Proxy Pattern  │      │  Main Service    │
 └─────────────────┘      └────────┬─────────┘
                                   │
@@ -131,7 +131,7 @@ Epic 3 delivers comprehensive search and discovery capabilities for the Campus M
   - `GET /discovery/recently-viewed` - Recently viewed products
 
 #### Listing-API Service (Proxy)
-- **Port**: 8081
+- **Port**: 8100
 - **Purpose**: Backward compatibility during frontend migration
 - **Proxy Endpoints**:
   - `POST /listings/search/v2` → `POST /api/search`
@@ -217,7 +217,7 @@ docker-compose up -d
 
 # Services will be available at:
 # - Backend: http://localhost:8080/api
-# - Listing-API: http://localhost:8081
+# - Listing-API: http://localhost:8100
 # - PostgreSQL: localhost:5432
 # - Redis: localhost:6379 (optional)
 ```
