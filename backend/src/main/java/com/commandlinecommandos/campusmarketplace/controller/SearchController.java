@@ -112,7 +112,7 @@ public class SearchController {
             @Parameter(description = "Search query (min 2 characters)") 
             @RequestParam(value = "q", required = false) String q,
             @RequestParam(value = "query", required = false) String query,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
         
         // Support both 'q' and 'query' parameters
         String searchQuery = q != null ? q : query;
@@ -148,7 +148,7 @@ public class SearchController {
     @Operation(summary = "Get search history",
                description = "Get recent search queries for the current user")
     public ResponseEntity<?> getSearchHistory(
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
         
         try {
             User user = getCurrentUser(token);
