@@ -179,10 +179,13 @@ public class DiscoveryService {
     @Cacheable(value = "recentlyViewed", key = "#user.userId + '_' + #limit")
     public List<ProductSummary> getRecentlyViewedItems(User user, int limit) {
         try {
+            // Fetch products (seller will be loaded when accessed in transformToSummary)
             List<Product> recentlyViewed = productViewRepository.findRecentlyViewedByUser(
                 user, PageRequest.of(0, limit)
             );
             
+            // Transform to summaries (seller is accessed here, triggering lazy load)
+            // Since we're in a transaction context, lazy loading will work
             List<ProductSummary> result = recentlyViewed.stream()
                 .map(this::transformToSummary)
                 .collect(Collectors.toList());
@@ -224,6 +227,7 @@ public class DiscoveryService {
     
     /**
      * Transform Product to ProductSummary
+     * Handles null seller/university gracefully to avoid NPE
      */
     private ProductSummary transformToSummary(Product product) {
         ProductSummary summary = new ProductSummary();
@@ -237,8 +241,13 @@ public class DiscoveryService {
         summary.setViewCount(product.getViewCount());
         summary.setFavoriteCount(product.getFavoriteCount());
         summary.setCreatedAt(product.getCreatedAt());
-        summary.setSellerId(product.getSeller().getUserId());
-        summary.setSellerUsername(product.getSeller().getUsername());
+        
+        // Handle null seller gracefully
+        if (product.getSeller() != null) {
+            summary.setSellerId(product.getSeller().getUserId());
+            summary.setSellerUsername(product.getSeller().getUsername());
+        }
+        
         summary.setLocation(product.getPickupLocation());
         summary.setNegotiable(product.isNegotiable());
         summary.setQuantity(product.getQuantity());

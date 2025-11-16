@@ -21,7 +21,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.time.Duration;
-import java.util.Arrays;
 
 /**
  * Cache Configuration with graceful Redis fallback
@@ -71,8 +70,11 @@ public class CacheConfig {
 
             log.info("✅ Redis cache enabled - Using distributed caching");
             
+            // Redis cache manager allows dynamic cache creation by default
+            // No need to pre-define cache names - they're created on first use
             return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
+                .transactionAware()
                 .build();
                 
         } catch (Exception e) {
@@ -91,7 +93,10 @@ public class CacheConfig {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
             "searchResults",
             "trendingProducts",
-            "recommendations"
+            "recommendations",
+            "recommendedItems",
+            "recentlyViewed",
+            "autocomplete"
         );
         
         cacheManager.setCaffeine(Caffeine.newBuilder()
@@ -110,22 +115,15 @@ public class CacheConfig {
      * Allows dynamic cache creation to prevent "cache not found" errors
      */
     @Bean
-    @ConditionalOnProperty(name = "spring.cache.type", havingValue = "none", matchIfMissing = true)
+    @ConditionalOnProperty(name = "spring.cache.type", havingValue = "none", matchIfMissing = false)
     public CacheManager simpleCacheManager() {
         log.warn("⚠️  Caching DISABLED - Using no-op cache manager for testing");
         
         // Create a ConcurrentMapCacheManager that allows any cache name dynamically
+        // Don't set cache names - this allows dynamic creation
         ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
         
-        // Pre-define expected cache names
-        cacheManager.setCacheNames(Arrays.asList(
-            "searchResults",
-            "trendingProducts", 
-            "recommendations",
-            "autocomplete"
-        ));
-        
-        // Allow dynamic cache creation for any other cache names
+        // Allow dynamic cache creation for any cache names
         cacheManager.setAllowNullValues(false);
         
         return cacheManager;
@@ -134,20 +132,17 @@ public class CacheConfig {
     /**
      * Test Profile Cache Manager
      * Explicitly used in test profile to ensure cache manager is available
+     * Allows dynamic cache creation to prevent "cache not found" errors
      */
     @Bean
     @Profile("test")
     @Primary
     public CacheManager testCacheManager() {
-        log.warn("⚠️  TEST PROFILE - Using test cache manager");
+        log.warn("⚠️  TEST PROFILE - Using test cache manager with dynamic cache creation");
         
-        // Create a ConcurrentMapCacheManager with all cache names
-        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager(
-            "searchResults",
-            "trendingProducts", 
-            "recommendations",
-            "autocomplete"
-        );
+        // Create a ConcurrentMapCacheManager that allows dynamic cache creation
+        // Don't set cache names - this allows any cache name to be created on first use
+        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
         
         cacheManager.setAllowNullValues(false);
         

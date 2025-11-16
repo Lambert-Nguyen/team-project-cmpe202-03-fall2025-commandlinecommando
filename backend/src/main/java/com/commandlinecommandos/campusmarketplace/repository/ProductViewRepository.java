@@ -33,6 +33,8 @@ public interface ProductViewRepository extends JpaRepository<ProductView, UUID> 
     
     /**
      * Find recently viewed products by user
+     * Returns products ordered by most recent view
+     * Note: Seller is fetched separately in service layer to avoid JOIN FETCH + Pageable issues
      * @param user The user
      * @param pageable Pagination settings
      * @return List of recently viewed products
