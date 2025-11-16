@@ -33,18 +33,30 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Login",
+          "name": "Register Test User",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
+                  "// Auto-save token and user ID",
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('auth_token', jsonData.token);",
+                  "    pm.environment.set('auth_token', jsonData.accessToken);",
                   "    pm.environment.set('user_id', jsonData.userId);",
-                  "    console.log('Token saved:', jsonData.token);",
-                  "}"
+                  "    pm.environment.set('refresh_token', jsonData.refreshToken);",
+                  "    console.log('✅ User registered and token saved!');",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has accessToken', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -60,7 +72,66 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpassword123\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@sjsu.edu\",\n  \"password\": \"password123\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phone\": \"555-1234\",\n  \"role\": \"STUDENT\",\n  \"studentId\": \"STU999\",\n  \"major\": \"Computer Science\",\n  \"graduationYear\": 2025,\n  \"campusLocation\": \"San Jose Main Campus\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Auto-save token and user ID",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    // Save accessToken (not \"token\")",
+                  "    pm.environment.set('auth_token', jsonData.accessToken);",
+                  "    pm.environment.set('user_id', jsonData.userId);",
+                  "    pm.environment.set('refresh_token', jsonData.refreshToken);",
+                  "    console.log('✅ Access token saved:', jsonData.accessToken.substring(0, 20) + '...');",
+                  "    console.log('✅ User ID saved:', jsonData.userId);",
+                  "    console.log('✅ Refresh token saved:', jsonData.refreshToken.substring(0, 20) + '...');",
+                  "}",
+                  "",
+                  "// Verify response structure",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has accessToken', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Response has refreshToken', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('refreshToken');",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\",\n  \"deviceInfo\": \"Postman Test Device\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -94,6 +165,18 @@
                   "pm.test('Search completes in < 200ms', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.metadata.searchTimeMs).to.be.below(200);",
+                  "    console.log('⚡ Search completed in ' + jsonData.metadata.searchTimeMs + 'ms');",
+                  "});",
+                  "",
+                  "pm.test('Products have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.results.length > 0) {",
+                  "        var product = jsonData.results[0];",
+                  "        pm.expect(product).to.have.property('productId');",
+                  "        pm.expect(product).to.have.property('title');",
+                  "        pm.expect(product).to.have.property('price');",
+                  "        pm.expect(product).to.have.property('category');",
+                  "    }",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -103,6 +186,11 @@
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -121,9 +209,103 @@
         },
         {
           "name": "Search with Category Filter",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Debug: Check if auth_token is set",
+                  "var authToken = pm.environment.get('auth_token');",
+                  "if (!authToken) {",
+                  "    console.error('❌ ERROR: auth_token is not set in environment!');",
+                  "    console.error('Please run Login or Register Test User first.');",
+                  "} else {",
+                  "    console.log('✅ auth_token found:', authToken.substring(0, 20) + '...');",
+                  "    // Check token expiration (basic check)",
+                  "    try {",
+                  "        var tokenParts = authToken.split('.');",
+                  "        if (tokenParts.length === 3) {",
+                  "            var payload = JSON.parse(atob(tokenParts[1]));",
+                  "            var exp = payload.exp * 1000; // Convert to milliseconds",
+                  "            var now = Date.now();",
+                  "            if (exp < now) {",
+                  "                console.error('❌ Token is EXPIRED! Expired at:', new Date(exp));",
+                  "                console.error('Please login again to get a new token.');",
+                  "            } else {",
+                  "                console.log('✅ Token is valid until:', new Date(exp));",
+                  "                console.log('✅ Token username:', payload.sub);",
+                  "            }",
+                  "        }",
+                  "    } catch (e) {",
+                  "        console.warn('⚠️ Could not parse token:', e.message);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Debug 401 errors",
+                  "if (pm.response.code === 401) {",
+                  "    console.error('❌ 401 Unauthorized Error');",
+                  "    console.error('Response:', pm.response.text());",
+                  "    var authToken = pm.environment.get('auth_token');",
+                  "    if (!authToken) {",
+                  "        console.error('❌ auth_token is missing from environment!');",
+                  "    } else {",
+                  "        console.error('Token being used:', authToken.substring(0, 30) + '...');",
+                  "        // Check if Authorization header was sent",
+                  "        var authHeader = pm.request.headers.get('Authorization');",
+                  "        if (!authHeader) {",
+                  "            console.error('❌ Authorization header is missing from request!');",
+                  "        } else {",
+                  "            console.error('Authorization header:', authHeader.substring(0, 30) + '...');",
+                  "        }",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has results array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('results');",
+                  "    pm.expect(jsonData.results).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Search completes in < 200ms', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata.searchTimeMs).to.be.below(200);",
+                  "    console.log('⚡ Search completed in ' + jsonData.metadata.searchTimeMs + 'ms');",
+                  "});",
+                  "",
+                  "pm.test('Products have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.results.length > 0) {",
+                  "        var product = jsonData.results[0];",
+                  "        pm.expect(product).to.have.property('productId');",
+                  "        pm.expect(product).to.have.property('title');",
+                  "        pm.expect(product).to.have.property('price');",
+                  "        pm.expect(product).to.have.property('category');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -142,9 +324,46 @@
         },
         {
           "name": "Search with Price Range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has results array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('results');",
+                  "    pm.expect(jsonData.results).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Search completes in < 200ms', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata.searchTimeMs).to.be.below(200);",
+                  "});",
+                  "",
+                  "pm.test('Price filter applied correctly', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.results.forEach(function(product) {",
+                  "        pm.expect(product.price).to.be.at.least(500);",
+                  "        pm.expect(product.price).to.be.at.most(1500);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -163,9 +382,45 @@
         },
         {
           "name": "Search with Multiple Filters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has results array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('results');",
+                  "    pm.expect(jsonData.results).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Search completes in < 200ms', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata.searchTimeMs).to.be.below(200);",
+                  "});",
+                  "",
+                  "pm.test('Metadata shows applied filters', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata).to.have.property('appliedFilters');",
+                  "    pm.expect(jsonData.metadata).to.have.property('totalFilters');",
+                  "    pm.expect(jsonData.metadata.totalFilters).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -184,9 +439,41 @@
         },
         {
           "name": "Search - Sort by Price (Low to High)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Results sorted by price ascending', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.results.length > 1) {",
+                  "        for (var i = 1; i < jsonData.results.length; i++) {",
+                  "            pm.expect(jsonData.results[i].price).to.be.at.least(jsonData.results[i-1].price);",
+                  "        }",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Metadata shows correct sort', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata.sortedBy).to.equal('price_asc');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -205,9 +492,41 @@
         },
         {
           "name": "Search - Sort by Date (Newest)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Metadata shows correct sort', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metadata.sortedBy).to.equal('date_desc');",
+                  "});",
+                  "",
+                  "pm.test('Response has pagination info', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalResults');",
+                  "    pm.expect(jsonData).to.have.property('totalPages');",
+                  "    pm.expect(jsonData).to.have.property('currentPage');",
+                  "    pm.expect(jsonData).to.have.property('hasNext');",
+                  "    pm.expect(jsonData).to.have.property('hasPrevious');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -226,9 +545,39 @@
         },
         {
           "name": "Autocomplete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns suggestions array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('suggestions');",
+                  "    pm.expect(jsonData.suggestions).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Autocomplete completes in < 100ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(100);",
+                  "    console.log('⚡ Autocomplete: ' + pm.response.responseTime + 'ms');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/search/autocomplete?q=lap",
               "host": ["{{base_url}}"],
@@ -244,9 +593,44 @@
         },
         {
           "name": "Search History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns history array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('history');",
+                  "    pm.expect(jsonData.history).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('History items have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.history.length > 0) {",
+                  "        var item = jsonData.history[0];",
+                  "        pm.expect(item).to.have.property('id');",
+                  "        pm.expect(item).to.have.property('searchQuery');",
+                  "        pm.expect(item).to.have.property('createdAt');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/search/history",
               "host": ["{{base_url}}"],
@@ -261,9 +645,41 @@
       "item": [
         {
           "name": "Trending Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns trending array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('trending');",
+                  "    pm.expect(jsonData.trending).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Trending items have productId', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.trending.length > 0) {",
+                  "        pm.expect(jsonData.trending[0]).to.have.property('productId');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/discovery/trending?limit=10",
               "host": ["{{base_url}}"],
@@ -279,9 +695,44 @@
         },
         {
           "name": "Recommended Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns recommended array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('recommended');",
+                  "    pm.expect(jsonData.recommended).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Recommended items have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.recommended.length > 0) {",
+                  "        var product = jsonData.recommended[0];",
+                  "        pm.expect(product).to.have.property('productId');",
+                  "        pm.expect(product).to.have.property('title');",
+                  "        pm.expect(product).to.have.property('price');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/discovery/recommended?limit=10",
               "host": ["{{base_url}}"],
@@ -297,9 +748,44 @@
         },
         {
           "name": "Similar Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "pm.test('Returns similar array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('similar');",
+                  "    pm.expect(jsonData.similar).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Similar products have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.similar.length > 0) {",
+                  "        var product = jsonData.similar[0];",
+                  "        pm.expect(product).to.have.property('productId');",
+                  "        pm.expect(product).to.have.property('title');",
+                  "        pm.expect(product).to.have.property('category');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/discovery/similar/:productId?limit=10",
               "host": ["{{base_url}}"],
@@ -321,9 +807,43 @@
         },
         {
           "name": "Recently Viewed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns recentlyViewed array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('recentlyViewed');",
+                  "    pm.expect(jsonData.recentlyViewed).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Recently viewed items have required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.recentlyViewed.length > 0) {",
+                  "        var product = jsonData.recentlyViewed[0];",
+                  "        pm.expect(product).to.have.property('productId');",
+                  "        pm.expect(product).to.have.property('title');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/discovery/recently-viewed?limit=20",
               "host": ["{{base_url}}"],
@@ -348,6 +868,11 @@
             "method": "POST",
             "header": [
               {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -367,7 +892,13 @@
           "name": "Autocomplete (Proxy)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{listing_api_url}}/listings/search/autocomplete?q=lap",
               "host": ["{{listing_api_url}}"],
@@ -385,7 +916,13 @@
           "name": "Trending (Proxy)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{listing_api_url}}/listings/discovery/trending?limit=10",
               "host": ["{{listing_api_url}}"],
