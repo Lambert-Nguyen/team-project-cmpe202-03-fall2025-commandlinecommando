@@ -152,6 +152,22 @@
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 		
+		<!-- Redis for Search Caching (Optional - can fallback to Caffeine) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+		</dependency>
+		
+		<!-- Caffeine for In-Memory Caching (Redis Fallback) -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+		
 		<!-- Swagger/OpenAPI for API Documentation -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -179,6 +195,22 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+				<annotationProcessorPaths>
+					<path>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok</artifactId>
+						<version>1.18.40</version>
+					</path>
+				</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,9 @@ public class ListingController {
 
     @Autowired
     private FileStorageService fileStorageService;
+    
+    @Autowired
+    private com.commandlinecommandos.listingapi.service.SearchProxyService searchProxyService;
 
     @Autowired
     private JwtHelper jwtHelper;
@@ -275,5 +279,97 @@ public class ListingController {
         logger.info("Successfully deleted listing ID: {}", listingId);
         
         return ResponseEntity.ok("Listing deleted successfully");
+    }
+
+    // ========================================================================
+    // PROXY ENDPOINTS FOR ENHANCED SEARCH (EPIC 3)
+    // ========================================================================
+    
+    /**
+     * Enhanced search endpoint (v2) - Proxies to main backend
+     * Provides full-text search, advanced filtering, and discovery features
+     * 
+     * @param request Search request body
+     * @param token Authorization header
+     * @return Enhanced search response from backend
+     */
+    @PostMapping("/search/v2")
+    public ResponseEntity<?> searchV2(
+            @RequestBody java.util.Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        
+        try {
+            logger.info("Proxying enhanced search request to backend: query={}",
+                       request.get("query"));
+            
+            java.util.Map<String, Object> response = searchProxyService.proxySearchRequest(request, token);
+            
+            logger.info("Enhanced search proxy completed successfully");
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.web.client.RestClientException e) {
+            logger.error("Error proxying search request to backend: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body("Error communicating with backend service");
+        } catch (Exception e) {
+            logger.error("Unexpected error in search proxy: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Internal server error");
+        }
+    }
+    
+    /**
+     * Autocomplete endpoint - Proxies to main backend
+     * 
+     * @param q Search query
+     * @param token Authorization header
+     * @return List of autocomplete suggestions
+     */
+    @GetMapping("/search/autocomplete")
+    public ResponseEntity<?> autocomplete(
+            @RequestParam String q,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        
+        try {
+            logger.debug("Proxying autocomplete request to backend: query={}", q);
+            
+            Object response = searchProxyService.proxyAutocompleteRequest(q, token);
+            
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.web.client.RestClientException e) {
+            logger.error("Error proxying autocomplete request to backend: {}", e.getMessage(), e);
+            return ResponseEntity.ok(java.util.List.of());  // Return empty list on error
+        } catch (Exception e) {
+            logger.error("Unexpected error in autocomplete proxy: {}", e.getMessage(), e);
+            return ResponseEntity.ok(java.util.List.of());  // Return empty list on error
+        }
+    }
+    
+    /**
+     * Discovery endpoints - Proxy to main backend
+     * Supports: trending, recommended, similar/{productId}, recently-viewed
+     * 
+     * @param endpoint Discovery endpoint type
+     * @param token Authorization header
+     * @return Discovery response from backend
+     */
+    @GetMapping("/discovery/{endpoint}")
+    public ResponseEntity<?> discovery(
+            @PathVariable String endpoint,
+            @RequestParam java.util.Map<String, String> params,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        
+        try {
+            logger.debug("Proxying discovery request to backend: endpoint={}", endpoint);
+            
+            Object response = searchProxyService.proxyDiscoveryRequest(endpoint, params, token);
+            
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.web.client.RestClientException e) {
+            logger.error("Error proxying discovery request to backend: {}", e.getMessage(), e);
+            return ResponseEntity.ok(java.util.List.of());  // Return empty list on error
+        } catch (Exception e) {
+            logger.error("Unexpected error in discovery proxy: {}", e.getMessage(), e);
+            return ResponseEntity.ok(java.util.List.of());  // Return empty list on error
+        }
     }
 }

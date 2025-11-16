@@ -15,12 +15,16 @@ import com.commandlinecommandos.campusmarketplace.dto.AuthResponse;
 import com.commandlinecommandos.campusmarketplace.dto.RefreshTokenRequest;
 import com.commandlinecommandos.campusmarketplace.dto.RegisterRequest;
 import com.commandlinecommandos.campusmarketplace.model.RefreshToken;
+import com.commandlinecommandos.campusmarketplace.model.University;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.model.UserRole;
 import com.commandlinecommandos.campusmarketplace.model.VerificationStatus;
 import com.commandlinecommandos.campusmarketplace.repository.RefreshTokenRepository;
+import com.commandlinecommandos.campusmarketplace.repository.UniversityRepository;
 import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -29,6 +33,8 @@ import java.util.UUID;
 @Service
 @Transactional
 public class AuthService {
+    
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -44,6 +50,9 @@ public class AuthService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private UniversityRepository universityRepository;
     
     @Autowired(required = false)
     private LoginAttemptService loginAttemptService;
@@ -255,6 +264,10 @@ public class AuthService {
             user.setGraduationYear(registerRequest.getGraduationYear());
         }
         
+        // Set university based on email domain or use default
+        University university = findOrCreateUniversityForEmail(registerRequest.getEmail());
+        user.setUniversity(university);
+        
         // Save user to database
         user = userRepository.save(user);
         
@@ -285,5 +298,45 @@ public class AuthService {
         response.setPhone(user.getPhone());
         response.setActive(user.isActive());
         return response;
+    }
+    
+    /**
+     * Find or create university based on email domain
+     * Falls back to default SJSU university if domain not found
+     */
+    private University findOrCreateUniversityForEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            // Default to SJSU if email is invalid
+            return universityRepository.findByDomainIgnoreCase("sjsu.edu")
+                .orElseGet(() -> getDefaultUniversity());
+        }
+        
+        String domain = email.substring(email.indexOf("@") + 1).toLowerCase();
+        
+        // Try to find university by domain
+        return universityRepository.findByDomainIgnoreCase(domain)
+            .orElseGet(() -> {
+                // If not found, use default SJSU university
+                log.warn("University not found for domain: {}, using default SJSU", domain);
+                return getDefaultUniversity();
+            });
+    }
+    
+    /**
+     * Get default university (SJSU) or create it if it doesn't exist
+     */
+    private University getDefaultUniversity() {
+        return universityRepository.findByDomainIgnoreCase("sjsu.edu")
+            .orElseGet(() -> {
+                log.info("Creating default SJSU university");
+                University defaultUni = new University();
+                defaultUni.setName("San Jose State University");
+                defaultUni.setDomain("sjsu.edu");
+                defaultUni.setCity("San Jose");
+                defaultUni.setState("California");
+                defaultUni.setCountry("USA");
+                defaultUni.setActive(true);
+                return universityRepository.save(defaultUni);
+            });
     }
 }

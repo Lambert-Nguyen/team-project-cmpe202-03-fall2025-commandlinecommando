@@ -43,6 +43,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: prod
@@ -63,6 +65,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       SQL_LOG_LEVEL: ${SQL_LOG_LEVEL:-WARN}
 
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
       # Server Configuration
       PORT: 8080
     ports:
@@ -76,6 +82,24 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    networks:
+      - campus-marketplace-network
+
+  # Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: campus-marketplace-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - campus-marketplace-network
 
@@ -100,6 +124,9 @@ services:
       DB_APP_USER: ${DB_APP_USER:-cm_app_user}
       DB_APP_PASSWORD: ${DB_APP_PASSWORD:-changeme}
 
+      # Backend URL for proxy
+      BACKEND_URL: ${BACKEND_URL:-http://backend:8080/api}
+
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
 
@@ -122,6 +149,8 @@ volumes:
     name: campus-marketplace-postgres-data
   backend_logs:
     name: campus-marketplace-backend-logs
+  redis_data:
+    name: campus-marketplace-redis-data
 
 # Custom network
 networks:
