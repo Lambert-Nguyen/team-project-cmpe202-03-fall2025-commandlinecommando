@@ -250,6 +250,11 @@ pm.test("Response has refreshToken", function () {
 
 **Purpose**: Search products with a simple query
 
+**⚠️ Important**: If you get a 500 error, make sure:
+- You registered a user with an email containing `@sjsu.edu` domain
+- The user has a university assigned (automatically done during registration)
+- If you registered before this fix, you may need to register a new user
+
 **Endpoint**: `POST {{base_url}}/search`
 
 **Headers**:

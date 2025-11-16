@@ -52,6 +52,12 @@ public class SearchService {
         long startTime = System.currentTimeMillis();
         
         try {
+            // Check if user has a university assigned
+            if (user.getUniversity() == null) {
+                log.error("User {} does not have a university assigned", user.getUsername());
+                throw new IllegalArgumentException("User must have a university assigned to perform searches");
+            }
+            
             UUID universityId = user.getUniversity().getUniversityId();
             
             // Determine search strategy based on query
