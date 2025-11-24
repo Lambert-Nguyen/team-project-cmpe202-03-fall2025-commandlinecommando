@@ -9,10 +9,21 @@ git clone <repository-url>
 cd listing-api
 mvn clean install
 
-# Run locally
+# Run locally (development mode - H2 database)
 mvn spring-boot:run
 # or
 make run
+
+# Run in production mode (PostgreSQL)
+export SPRING_PROFILES_ACTIVE=prod
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=campus_marketplace
+export DB_APP_USER=cm_app_user
+export DB_APP_PASSWORD=your_password
+mvn spring-boot:run
+# or
+make run-prod
 
 # Access application
 curl http://localhost:8100/actuator/health
@@ -30,12 +41,24 @@ mvn test -Dtest=ListingControllerTest
 curl -X GET "http://localhost:8100/api/listings"
 ```
 
+## Authentication
+
+All protected endpoints require a JWT token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+The JWT token should contain:
+- `userId`: User's unique identifier
+- `role`: User's role (e.g., "ADMIN", "STUDENT")
+
 ## Common API Calls
 
-### Create Listing
+### Create Listing (Requires JWT Token)
 ```bash
 curl -X POST "http://localhost:8100/api/listings/" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-jwt-token>" \
   -d '{
     "title": "MacBook Pro 13-inch",
     "description": "Excellent condition MacBook Pro",
@@ -51,9 +74,10 @@ curl -X POST "http://localhost:8100/api/listings/" \
 curl -X GET "http://localhost:8100/api/listings/search?category=ELECTRONICS&keyword=MacBook"
 ```
 
-### Upload Image
+### Upload Image (Requires JWT Token)
 ```bash
 curl -X POST "http://localhost:8100/api/files/upload/1" \
+  -H "Authorization: Bearer <your-jwt-token>" \
   -F "file=@image.jpg" \
   -F "displayOrder=1"
 ```
@@ -185,14 +209,44 @@ CREATE INDEX idx_listings_price ON listings(price);
 
 ## Error Codes Quick Reference
 
+The API uses a comprehensive global exception handler that returns consistent error responses.
+
+### HTTP Status Codes
 | Status | Description | Common Causes |
 |--------|-------------|---------------|
 | 200 | OK | Success |
-| 400 | Bad Request | Validation errors, invalid JSON |
+| 400 | Bad Request | Validation errors, invalid JSON, malformed requests |
 | 401 | Unauthorized | Missing/invalid authentication |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 500 | Internal Server Error | Server/database issues |
+| 403 | Forbidden | Insufficient permissions, unauthorized access |
+| 404 | Not Found | Resource doesn't exist, endpoint not found |
+| 405 | Method Not Allowed | HTTP method not supported for endpoint |
+| 413 | Payload Too Large | File upload size exceeded |
+| 500 | Internal Server Error | Server/database issues, unexpected exceptions |
+
+### Error Response Format
+All errors return a standardized `ErrorResponse` structure:
+```json
+{
+  "error": "ERROR_CODE",
+  "message": "Human-readable error message",
+  "status": 400,
+  "timestamp": "2024-01-15T12:00:00",
+  "path": "/api/listings/",
+  "validationErrors": ["field: error message"]
+}
+```
+
+### Common Error Codes
+- `LISTING_NOT_FOUND`: Listing with specified ID not found
+- `REPORT_NOT_FOUND`: Report with specified ID not found
+- `UNAUTHORIZED_ACCESS`: User lacks permission for operation
+- `VALIDATION_ERROR`: Request validation failed
+- `FILE_UPLOAD_ERROR`: File upload operation failed
+- `FILE_TOO_LARGE`: File size exceeds maximum limit
+- `MALFORMED_JSON`: Request body contains invalid JSON
+- `MISSING_PARAMETER`: Required request parameter missing
+- `METHOD_NOT_ALLOWED`: HTTP method not supported
+- `INTERNAL_SERVER_ERROR`: Unexpected server error
 
 ## Development Workflow
 

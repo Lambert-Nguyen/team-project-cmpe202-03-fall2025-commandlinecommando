@@ -83,14 +83,32 @@ public class WebSecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-
-                // Admin only endpoints
+                
+                // Admin only endpoints (context path /api is already applied)
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                // Student and Admin endpoints
+                
+                // Debug endpoints (admin only, development use)
+                .requestMatchers("/debug/**").hasRole("ADMIN")
+                
+                // Student and Admin endpoints (context path /api is already applied)
                 .requestMatchers("/listings/**").hasAnyRole("STUDENT", "ADMIN")
                 .requestMatchers("/user/**").hasAnyRole("STUDENT", "ADMIN")
 
+                .requestMatchers("/actuator/prometheus").permitAll()
+                .requestMatchers("/actuator/metrics").permitAll()
+                
+                // Swagger/OpenAPI endpoints
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                
+                
+                // User profile endpoints (authenticated users - context path /api is already applied)
+                .requestMatchers("/users/profile").authenticated()
+                .requestMatchers("/users/change-password").authenticated()
+                .requestMatchers("/users/deactivate").authenticated()
+                .requestMatchers("/users/{userId}").authenticated()
+                
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             );

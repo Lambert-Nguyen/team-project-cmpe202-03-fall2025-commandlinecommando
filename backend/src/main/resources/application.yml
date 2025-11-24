@@ -17,6 +17,18 @@ spring:
     timeout: 1800s
     jdbc:
       cleanup-cron: "0 0 4 * * *"
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: 2000ms
+    connect-timeout: 2000ms
+  cache:
+    type: ${CACHE_TYPE:redis}  # Can be 'redis', 'caffeine', or 'none'
+    redis:
+      time-to-live: 600000  # 10 minutes
+      cache-null-values: false
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=600s  # Fallback if Redis unavailable
 
 server:
   port: ${PORT:8080}
@@ -55,6 +67,15 @@ management:
     export:
       prometheus:
         enabled: true
+
+# Search & Discovery Configuration
+app:
+  search:
+    cache-ttl: 600000          # 10 minutes
+    max-results-per-page: 100
+    autocomplete-min-length: 2
+    fuzzy-match-threshold: 0.3
+    trending-cache-ttl: 900000  # 15 minutes
 
 ---
 # ==============================================
@@ -177,6 +198,8 @@ spring:
     format-sql: false
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  cache:
+    type: none  # Disable caching in tests
 
 # Test Logging
 logging:

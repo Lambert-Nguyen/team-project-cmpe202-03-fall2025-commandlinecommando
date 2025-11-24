@@ -12,6 +12,8 @@ The Listing API is part of the Campus Marketplace application, providing compreh
 - Listing status management (Active, Sold, Cancelled)
 - Seller-specific listing management
 - View count tracking
+- Report Management System - Complete reporting and moderation functionality
+- Report Management System - Complete reporting and moderation functionality
 
 ## Features
 
@@ -36,6 +38,14 @@ The Listing API is part of the Campus Marketplace application, providing compreh
 - **File Storage**: Secure file storage with validation
 - **Image Retrieval**: Get all images associated with a listing
 
+### Report Management System
+- **Report Creation**: Users can report inappropriate listings, spam, fake listings, etc.
+- **Report Types**: Support for multiple report categories (Inappropriate Content, Spam, Fake Listing, Harassment, Copyright Violation, Other)
+- **Status Tracking**: Complete lifecycle management (Pending, Under Review, Resolved, Dismissed)
+- **Admin Moderation**: Administrative tools for reviewing and managing reports
+- **Advanced Search**: Filter reports by status, type, reporter, listing, and reviewer
+- **Dashboard Statistics**: Report counts and analytics for admin dashboards
+
 ### Data Models
 
 #### Listing
@@ -53,10 +63,38 @@ The Listing API is part of the Campus Marketplace application, providing compreh
 - `viewCount`: Number of times viewed
 - `images`: Associated images
 
+#### Report
+- `reportId`: Unique identifier
+- `reporterId`: ID of the user who submitted the report
+- `listingId`: ID of the reported listing
+- `reportType`: Type of report (enum)
+- `description`: Detailed description of the issue
+- `status`: Current report status (enum)
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+- `reviewedBy`: ID of the admin who reviewed the report
+- `reviewedAt`: Timestamp when report was reviewed
+
+#### Report
+- `reportId`: Unique identifier
+- `reporterId`: ID of the user who submitted the report
+- `listingId`: ID of the reported listing
+- `reportType`: Type of report (enum)
+- `description`: Detailed description of the issue
+- `status`: Current report status (enum)
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last update timestamp
+- `reviewedBy`: ID of the admin who reviewed the report
+- `reviewedAt`: Timestamp when report was reviewed
+
 #### Enums
 - **Category**: TEXTBOOKS, GADGETS, ELECTRONICS, STATIONARY, OTHER
 - **ItemCondition**: NEW, LIKE_NEW, GOOD, USED
 - **ListingStatus**: PENDING, ACTIVE, SOLD, CANCELLED
+- **ReportType**: INAPPROPRIATE_CONTENT, SPAM, FAKE_LISTING, HARASSMENT, COPYRIGHT_VIOLATION, OTHER
+- **ReportStatus**: PENDING, UNDER_REVIEW, RESOLVED, DISMISSED
+- **ReportType**: INAPPROPRIATE_CONTENT, SPAM, FAKE_LISTING, HARASSMENT, COPYRIGHT_VIOLATION, OTHER
+- **ReportStatus**: PENDING, UNDER_REVIEW, RESOLVED, DISMISSED
 
 ## Technology Stack
 
@@ -91,9 +129,21 @@ The Listing API is part of the Campus Marketplace application, providing compreh
 
 3. **Run the application**
    ```bash
+   # Development mode (default - uses H2 database)
    mvn spring-boot:run
    # or
    make run
+   
+   # Production mode (uses PostgreSQL)
+   export SPRING_PROFILES_ACTIVE=prod
+   export DB_HOST=localhost
+   export DB_PORT=5432
+   export DB_NAME=campus_marketplace
+   export DB_APP_USER=cm_app_user
+   export DB_APP_PASSWORD=your_password
+   mvn spring-boot:run
+   # or
+   make run-prod
    ```
 
 The API will be available at `http://localhost:8100`
@@ -147,7 +197,23 @@ http://localhost:8100/api
 ```
 
 ### Authentication
-Currently, the API uses placeholder authentication. In production, integrate with the main authentication service to retrieve actual user IDs.
+The API uses JWT (JSON Web Token) authentication. All protected endpoints require a valid JWT token in the `Authorization` header.
+
+**Header Format**:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**How it works**:
+- User ID and role are extracted from the JWT token
+- The `sellerId` for listings and `reporterId` for reports are automatically extracted from the JWT
+- Only the owner of a listing/report can modify or delete it
+- Admin-only endpoints require the `ADMIN` role in the JWT token
+
+**Note**: Spring Security is configured to allow all requests, but JWT validation is performed at the controller level for authorization.
+
+### Error Handling
+All API endpoints return consistent error responses using the global exception handler. See the [API Documentation](API_DOCUMENTATION.md#error-responses) for detailed error response formats and examples.
 
 ### Endpoints
 
@@ -191,6 +257,8 @@ GET /api/listings/seller/{sellerId}
 ```
 POST /api/listings/
 ```
+**Headers**: `Authorization: Bearer <jwt-token>`
+
 Request Body:
 ```json
 {
@@ -202,6 +270,8 @@ Request Body:
   "location": "San Jose, CA"
 }
 ```
+
+**Note**: The `sellerId` is automatically extracted from the JWT token. You don't need to include it in the request body.
 
 **Update Listing**
 ```
@@ -251,16 +321,226 @@ GET /api/files/listing/{listingId}
 DELETE /api/files/listing/{listingId}/{imageId}
 ```
 
+#### Report Management
+
+**Get All Reports**
+```
+GET /api/reports
+```
+Parameters: `page`, `size`, `sortBy`, `sortDirection`
+
+**Search Reports**
+```
+GET /api/reports/search
+```
+Parameters: `status`, `reporterId`, `listingId`, `reportType`, `reviewedBy`, pagination options
+
+**Get Pending Reports**
+```
+GET /api/reports/pending
+```
+
+**Get Reports by Reporter**
+```
+GET /api/reports/reporter/{reporterId}
+```
+
+**Get Reports by Listing**
+```
+GET /api/reports/listing/{listingId}
+```
+
+**Get Reports by Type**
+```
+GET /api/reports/type/{reportType}
+```
+
+**Get Reports by Status**
+```
+GET /api/reports/status/{status}
+```
+
+**Get Report by ID**
+```
+GET /api/reports/{reportId}
+```
+
+**Create Report**
+```
+POST /api/reports/
+```
+Request Body:
+```json
+{
+  "reporterId": 123,
+  "listingId": 456,
+  "reportType": "INAPPROPRIATE_CONTENT",
+  "description": "Description of the issue"
+}
+```
+
+**Update Report**
+```
+PUT /api/reports/{reportId}
+```
+
+**Mark Report as Reviewed**
+```
+PUT /api/reports/{reportId}/review
+```
+
+**Mark Report as Resolved**
+```
+PUT /api/reports/{reportId}/resolve
+```
+
+**Mark Report as Dismissed**
+```
+PUT /api/reports/{reportId}/dismiss
+```
+
+**Delete Report**
+```
+DELETE /api/reports/{reportId}
+```
+
+**Get Report Counts**
+```
+GET /api/reports/count
+```
+
+#### Report Management
+
+**Get All Reports**
+```
+GET /api/reports
+```
+Parameters: `page`, `size`, `sortBy`, `sortDirection`
+
+**Search Reports**
+```
+GET /api/reports/search
+```
+Parameters: `status`, `reporterId`, `listingId`, `reportType`, `reviewedBy`, pagination options
+
+**Get Pending Reports**
+```
+GET /api/reports/pending
+```
+
+**Get Reports by Reporter**
+```
+GET /api/reports/reporter/{reporterId}
+```
+
+**Get Reports by Listing**
+```
+GET /api/reports/listing/{listingId}
+```
+
+**Get Reports by Type**
+```
+GET /api/reports/type/{reportType}
+```
+
+**Get Reports by Status**
+```
+GET /api/reports/status/{status}
+```
+
+**Get Report by ID**
+```
+GET /api/reports/{reportId}
+```
+
+**Create Report**
+```
+POST /api/reports/
+```
+Request Body:
+```json
+{
+  "reporterId": 123,
+  "listingId": 456,
+  "reportType": "INAPPROPRIATE_CONTENT",
+  "description": "Description of the issue"
+}
+```
+
+**Update Report**
+```
+PUT /api/reports/{reportId}
+```
+
+**Mark Report as Reviewed**
+```
+PUT /api/reports/{reportId}/review
+```
+
+**Mark Report as Resolved**
+```
+PUT /api/reports/{reportId}/resolve
+```
+
+**Mark Report as Dismissed**
+```
+PUT /api/reports/{reportId}/dismiss
+```
+
+**Delete Report**
+```
+DELETE /api/reports/{reportId}
+```
+
+**Get Report Counts**
+```
+GET /api/reports/count
+```
+
 ## Development
 
 ### Project Structure
 ```
 src/main/java/com/commandlinecommandos/listingapi/
 ├── controller/          # REST controllers
+│   ├── ListingController.java
+│   ├── FileUploadController.java
+│   ├── ReportController.java
+│   ├── HomeController.java
+│   └── TestController.java
+├── dto/                 # Data Transfer Objects
+│   ├── CreateListingRequest.java
+│   ├── UpdateListingRequest.java
+│   ├── CreateReportRequest.java
+│   ├── UpdateReportRequest.java
+│   ├── ReportCounts.java
+│   └── ErrorResponse.java
 ├── model/              # Entity models and enums
+│   ├── Listing.java
+│   ├── ListingImage.java
+│   ├── Report.java
+│   ├── Category.java
+│   ├── ItemCondition.java
+│   ├── ListingStatus.java
+│   ├── ReportType.java
+│   └── ReportStatus.java
 ├── repository/         # Data access layer
+│   ├── ListingRepository.java
+│   ├── ListingImageRepository.java
+│   └── ReportRepository.java
 ├── service/            # Business logic layer
+│   ├── ListingService.java
+│   ├── FileStorageService.java
+│   └── ReportService.java
+├── security/          # Security and JWT utilities
+│   ├── JwtUtil.java
+│   ├── JwtHelper.java
+│   └── SecurityConfig.java
 ├── exception/          # Custom exceptions
+│   ├── GlobalExceptionHandler.java
+│   ├── ListingException.java
+│   ├── ReportException.java
+│   └── ...
 └── ListingApiApplication.java
 ```
 
@@ -302,15 +582,24 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ### Database Integration
 The listing-api integrates with the main campus marketplace database schema:
-- Uses the `listings` table
+- Uses the `listings` table for listing management
+- Uses the `listings` table for listing management
 - References `listing_images` table for image storage
+- Uses the `reports` table for report management
+- Uses the `reports` table for report management
 - Compatible with existing database migrations
 
 ### Authentication Integration
-Currently uses placeholder authentication. To integrate with the main auth service:
-1. Remove placeholder seller ID assignments
-2. Implement proper user authentication
-3. Extract user ID from authenticated session/token
+The API uses JWT authentication with the following components:
+- **JwtUtil**: Handles JWT token parsing and claim extraction
+- **JwtHelper**: Extracts JWT tokens from HTTP requests and validates them
+- **SecurityConfig**: Configures Spring Security to allow all requests (JWT validation at controller level)
+
+The JWT token should contain:
+- `userId`: User's unique identifier (UUID, converted to Long)
+- `role`: User's role (e.g., "ADMIN", "STUDENT")
+
+The `sellerId` for listings and `reporterId` for reports are automatically extracted from the JWT token claims.
 
 ## Troubleshooting
 

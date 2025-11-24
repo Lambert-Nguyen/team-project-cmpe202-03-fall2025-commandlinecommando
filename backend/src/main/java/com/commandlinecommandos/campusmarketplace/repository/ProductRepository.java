@@ -8,20 +8,22 @@ import com.commandlinecommandos.campusmarketplace.model.University;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Repository for Product entity
- * Supports marketplace search and filtering
+ * Supports marketplace search and filtering with full-text search capabilities
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
     
     /**
      * Find all active products for a university
@@ -99,8 +101,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
      */
     @Query("SELECT p FROM Product p WHERE p.university = :university " +
            "AND p.isActive = true " +
-           "AND p.moderationStatus = 'APPROVED' " +
-           "ORDER BY p.viewCount DESC")
+           "ORDER BY COALESCE(p.viewCount, 0) DESC, p.createdAt DESC")
     List<Product> findTopByViews(@Param("university") University university, Pageable pageable);
     
     /**
