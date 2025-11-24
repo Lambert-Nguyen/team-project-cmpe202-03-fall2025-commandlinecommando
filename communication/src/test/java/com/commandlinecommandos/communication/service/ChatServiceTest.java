@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +37,9 @@ class ChatServiceTest {
 
     @Mock
     private ListingService listingService;
+
+    @Mock
+    private EmailNotificationService emailNotificationService;
 
     @InjectMocks
     private ChatService chatService;
@@ -142,6 +146,8 @@ class ChatServiceTest {
         String content = "Test message";
         when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
         when(messageRepository.save(any(Message.class))).thenReturn(testMessage);
+        doNothing().when(emailNotificationService).sendMessageNotification(
+            any(Conversation.class), any(Message.class), anyLong());
 
         // Act
         Message result = chatService.sendMessage(1L, testBuyerId, content);
@@ -151,6 +157,8 @@ class ChatServiceTest {
         assertEquals(testMessage, result);
         verify(conversationRepository).findById(1L);
         verify(messageRepository).save(any(Message.class));
+        verify(emailNotificationService).sendMessageNotification(
+            eq(testConversation), eq(testMessage), eq(testBuyerId));
     }
 
     @Test
@@ -182,6 +190,8 @@ class ChatServiceTest {
         assertTrue(exception.getMessage().contains("is not a participant"));
         verify(conversationRepository).findById(1L);
         verify(messageRepository, never()).save(any(Message.class));
+        verify(emailNotificationService, never()).sendMessageNotification(
+            any(Conversation.class), any(Message.class), anyLong());
     }
 
     // Test sendMessageToListing method
@@ -195,6 +205,8 @@ class ChatServiceTest {
             .thenReturn(Optional.of(testConversation));
         when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
         when(messageRepository.save(any(Message.class))).thenReturn(testMessage);
+        doNothing().when(emailNotificationService).sendMessageNotification(
+            any(Conversation.class), any(Message.class), anyLong());
 
         // Act
         Message result = chatService.sendMessageToListing(testListingId, testBuyerId, content);
@@ -206,6 +218,8 @@ class ChatServiceTest {
         verify(conversationRepository).findByListingIdAndBuyerIdAndSellerId(
             testListingId, testBuyerId, testSellerId);
         verify(messageRepository).save(any(Message.class));
+        verify(emailNotificationService).sendMessageNotification(
+            eq(testConversation), eq(testMessage), eq(testBuyerId));
     }
 
     // Test getMessages method
@@ -419,6 +433,8 @@ class ChatServiceTest {
         Message sellerMessage = new Message(testConversation, testSellerId, content);
         sellerMessage.setMessageId(2L);
         when(messageRepository.save(any(Message.class))).thenReturn(sellerMessage);
+        doNothing().when(emailNotificationService).sendMessageNotification(
+            any(Conversation.class), any(Message.class), anyLong());
 
         // Act
         Message result = chatService.sendMessage(1L, testSellerId, content);
@@ -428,6 +444,54 @@ class ChatServiceTest {
         assertEquals(testSellerId, result.getSenderId());
         verify(conversationRepository).findById(1L);
         verify(messageRepository).save(any(Message.class));
+        verify(emailNotificationService).sendMessageNotification(
+            eq(testConversation), eq(sellerMessage), eq(testSellerId));
+    }
+
+    @Test
+    void testSendMessage_EmailNotificationServiceNull() {
+        // Arrange
+        // Set emailNotificationService to null to test null handling
+        org.springframework.test.util.ReflectionTestUtils.setField(
+            chatService, "emailNotificationService", null);
+        String content = "Test message";
+        when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
+        when(messageRepository.save(any(Message.class))).thenReturn(testMessage);
+
+        // Act
+        Message result = chatService.sendMessage(1L, testBuyerId, content);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(testMessage, result);
+        // Email notification should not be called if service is null
+        verify(conversationRepository).findById(1L);
+        verify(messageRepository).save(any(Message.class));
+        // Reset the field for other tests
+        org.springframework.test.util.ReflectionTestUtils.setField(
+            chatService, "emailNotificationService", emailNotificationService);
+    }
+
+    @Test
+    void testSendMessage_EmailNotificationThrowsException() {
+        // Arrange
+        String content = "Test message";
+        when(conversationRepository.findById(1L)).thenReturn(Optional.of(testConversation));
+        when(messageRepository.save(any(Message.class))).thenReturn(testMessage);
+        doThrow(new RuntimeException("Email service error")).when(emailNotificationService)
+            .sendMessageNotification(any(Conversation.class), any(Message.class), anyLong());
+
+        // Act
+        Message result = chatService.sendMessage(1L, testBuyerId, content);
+
+        // Assert
+        // Should not throw exception, just log error
+        assertNotNull(result);
+        assertEquals(testMessage, result);
+        verify(conversationRepository).findById(1L);
+        verify(messageRepository).save(any(Message.class));
+        verify(emailNotificationService).sendMessageNotification(
+            eq(testConversation), eq(testMessage), eq(testBuyerId));
     }
 
     @Test

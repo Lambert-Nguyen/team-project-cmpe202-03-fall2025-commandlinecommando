@@ -157,5 +157,58 @@ class ListingServiceTest {
         assertFalse(result);
         verify(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
     }
+
+    @Test
+    void testGetListingTitle_Success() {
+        // Arrange
+        Map<String, Object> listingData = new HashMap<>();
+        listingData.put("listingId", testListingId);
+        listingData.put("title", "Test Listing Title");
+
+        ResponseEntity<Map> response = new ResponseEntity<>(listingData, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+            .thenReturn(response);
+
+        // Act
+        String result = listingService.getListingTitle(testListingId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Test Listing Title", result);
+        verify(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    void testGetListingTitle_ListingNotFound() {
+        // Arrange
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+            .thenThrow(new RestClientException("Listing not found"));
+
+        // Act
+        String result = listingService.getListingTitle(testListingId);
+
+        // Assert
+        assertNull(result);
+        verify(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    void testGetListingTitle_NoTitleInResponse() {
+        // Arrange
+        Map<String, Object> listingData = new HashMap<>();
+        listingData.put("listingId", testListingId);
+        // No title in response
+
+        ResponseEntity<Map> response = new ResponseEntity<>(listingData, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+            .thenReturn(response);
+
+        // Act
+        String result = listingService.getListingTitle(testListingId);
+
+        // Assert
+        assertNull(result);
+        verify(restTemplate).exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
+    }
 }
 
