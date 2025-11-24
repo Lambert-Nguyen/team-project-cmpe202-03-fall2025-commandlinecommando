@@ -507,6 +507,210 @@ curl -X PUT http://localhost:8200/api/chat/conversations/1/read \
 
 ---
 
+#### 8. Get Notification Preferences
+
+Retrieves the current user's email notification preferences. If no preferences exist, returns default values (email notifications disabled).
+
+**Endpoint**: `GET /api/notifications/preferences`
+
+**Response**: `200 OK`
+```json
+{
+  "userId": 456,
+  "emailNotificationsEnabled": false,
+  "email": "user@example.com",
+  "firstName": "John"
+}
+```
+
+**Note**: If the user has not set preferences, `emailNotificationsEnabled` defaults to `false`, and `email` and `firstName` will be `null`.
+
+**Error Responses**:
+- `401 Unauthorized`: Missing or invalid JWT token
+
+**Example**:
+```bash
+curl -X GET http://localhost:8200/api/notifications/preferences \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+#### 9. Update Notification Preferences
+
+Updates the current user's email notification preferences. Creates preferences if they don't exist.
+
+**Endpoint**: `PUT /api/notifications/preferences`
+
+**Request Body**:
+```json
+{
+  "emailNotificationsEnabled": true,
+  "email": "user@example.com",
+  "firstName": "John"
+}
+```
+
+**Validation**:
+- `emailNotificationsEnabled`: Required, boolean value
+- `email`: Required, must be a valid email address
+- `firstName`: Required, must be between 2 and 100 characters
+
+**Response**: `200 OK`
+```json
+{
+  "userId": 456,
+  "emailNotificationsEnabled": true,
+  "email": "user@example.com",
+  "firstName": "John"
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: Invalid request body or validation errors
+- `401 Unauthorized`: Missing or invalid JWT token
+
+**Example**:
+```bash
+curl -X PUT http://localhost:8200/api/notifications/preferences \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "emailNotificationsEnabled": true,
+    "email": "user@example.com",
+    "firstName": "John"
+  }'
+```
+
+---
+
+## Email Notifications
+
+### Overview
+
+The communication service automatically sends email notifications when users receive new messages. This feature can be enabled or disabled per user through the notification preferences API. Email notifications are sent asynchronously and failures do not prevent message delivery.
+
+### How It Works
+
+1. **When a message is sent**: The `ChatService` triggers the `EmailNotificationService` after saving a message
+2. **Recipient identification**: The service determines the recipient (the other participant in the conversation)
+3. **Preference check**: Checks if the recipient has email notifications enabled in their preferences
+4. **Email lookup**: Retrieves the recipient's email address and first name from their notification preferences
+5. **Email sending**: Sends an email notification with message details and listing information
+6. **Error handling**: Email failures are logged but don't prevent message delivery (non-blocking)
+
+### Email Content
+
+The email notification includes:
+- **Subject**: "New message about your [Listing Title] listing"
+- **Recipient greeting**: Uses the recipient's first name (or "there" if not provided)
+- **Listing title**: Retrieved from the Listing API
+- **Message content**: The actual message text
+- **Call to action**: Instructions to view the conversation in the Campus Marketplace
+
+**Example Email**:
+```
+Subject: New message about your MacBook Pro listing
+
+Hi John,
+
+You have received a new message about your MacBook Pro listing:
+
+"Is this still available?"
+
+You can reply to this message by visiting the conversation in the Campus Marketplace.
+
+Best regards,
+Campus Marketplace Team
+```
+
+### Configuration
+
+Email notifications are configured via environment variables:
+
+```yaml
+# Enable/disable email notifications globally
+EMAIL_NOTIFICATIONS_ENABLED=true
+
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+EMAIL_FROM=noreply@campusmarketplace.com
+```
+
+**Note**: If `EMAIL_NOTIFICATIONS_ENABLED` is `false` or `JavaMailSender` is not configured, email notifications will be skipped entirely.
+
+### User Preferences
+
+Users must configure their notification preferences to receive emails:
+
+1. **Default behavior**: Email notifications are **disabled by default** for new users
+2. **Enabling notifications**: Users must set their preferences via the API:
+   - `emailNotificationsEnabled`: Set to `true`
+   - `email`: Provide a valid email address
+   - `firstName`: Provide a first name (2-100 characters)
+3. **Per-user control**: Each user can independently enable/disable notifications
+4. **No preference set**: If preferences don't exist, defaults to disabled
+
+### Setting Up Email Notifications
+
+**For a user to receive email notifications:**
+
+1. User must have notification preferences configured:
+```bash
+curl -X PUT http://localhost:8200/api/notifications/preferences \
+  -H "Authorization: Bearer USER_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "emailNotificationsEnabled": true,
+    "email": "user@example.com",
+    "firstName": "John"
+  }'
+```
+
+2. Global email notifications must be enabled (via `EMAIL_NOTIFICATIONS_ENABLED=true`)
+
+3. SMTP must be properly configured
+
+### Disabling Email Notifications
+
+**Globally** (affects all users):
+```bash
+export EMAIL_NOTIFICATIONS_ENABLED=false
+```
+
+**For a specific user**:
+```bash
+curl -X PUT http://localhost:8200/api/notifications/preferences \
+  -H "Authorization: Bearer USER_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "emailNotificationsEnabled": false,
+    "email": "user@example.com",
+    "firstName": "John"
+  }'
+```
+
+### Email Notification Service
+
+The `EmailNotificationService` is automatically injected into `ChatService` and called after each message is sent. The service:
+
+- Checks global email notification setting
+- Verifies recipient has notifications enabled
+- Retrieves recipient email and name from preferences
+- Fetches listing title from Listing API
+- Sends email via Spring Mail
+- Handles errors gracefully (logs but doesn't throw)
+
+**Service Dependencies**:
+- `JavaMailSender` (optional - if not available, notifications are skipped)
+- `ListingService` (for fetching listing titles)
+- `NotificationPreferenceRepository` (for user preferences)
+
+---
+
 ## Database Schema
 
 ### Tables
@@ -531,6 +735,30 @@ Stores conversation metadata between buyers and sellers for specific listings.
 - `idx_conversations_buyer` on `buyer_id`
 - `idx_conversations_seller` on `seller_id`
 - `idx_conversations_updated` on `updated_at DESC`
+
+#### `notification_preferences`
+
+Stores user preferences for email notifications, including email address and name for personalized notifications.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `preference_id` | BIGSERIAL | PRIMARY KEY | Auto-generated preference ID |
+| `user_id` | BIGINT | NOT NULL, UNIQUE | User ID (from backend service) |
+| `email` | VARCHAR(255) | NULLABLE | User's email address for notifications |
+| `first_name` | VARCHAR(255) | NULLABLE | User's first name for personalized emails |
+| `email_notifications_enabled` | BOOLEAN | NOT NULL, DEFAULT false | Whether email notifications are enabled |
+| `created_at` | TIMESTAMP | NOT NULL | Preference creation timestamp |
+| `updated_at` | TIMESTAMP | NOT NULL | Last update timestamp |
+
+**Unique Constraint**: `user_id` - One preference record per user
+
+**Indexes**:
+- `idx_notification_preferences_user` on `user_id` - Fast lookup by user ID
+
+**Notes**:
+- Default value for `email_notifications_enabled` is `false` (disabled)
+- `email` and `first_name` are optional but required if notifications are enabled
+- Preferences are created automatically when a user updates their settings
 
 #### `messages`
 
@@ -560,8 +788,9 @@ The service uses Flyway for database migrations. Migration files are located in:
 src/main/resources/db/migration/
 ```
 
-**Current Migration**:
+**Current Migrations**:
 - `V6__communication_chat_tables.sql` - Creates conversations and messages tables with indexes and triggers
+- `V7__notification_preferences.sql` - Creates notification preferences table for email notification settings (includes email, firstName, and enabled flag)
 
 ### Triggers
 
@@ -708,6 +937,12 @@ listing:
 | `BACKEND_URL` | Backend API URL | `http://localhost:8080/api` |
 | `LISTING_API_URL` | Listing API URL | `http://localhost:8100/api` |
 | `LOG_LEVEL` | Logging level | `INFO` |
+| `EMAIL_NOTIFICATIONS_ENABLED` | Enable email notifications globally | `true` |
+| `SMTP_HOST` | SMTP server host | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | `587` |
+| `SMTP_USERNAME` | SMTP username | (required) |
+| `SMTP_PASSWORD` | SMTP password | (required) |
+| `EMAIL_FROM` | From email address | `noreply@campusmarketplace.com` |
 
 ### Profiles
 
@@ -809,22 +1044,29 @@ communication/
 │   │   │   │   └── RestTemplateConfig.java        # REST client configuration
 │   │   │   ├── controller/
 │   │   │   │   ├── ChatController.java            # REST API endpoints
+│   │   │   │   ├── NotificationPreferenceController.java  # Notification preferences API
 │   │   │   │   └── HomeController.java            # Health check endpoint
 │   │   │   ├── service/
 │   │   │   │   ├── ChatService.java               # Business logic
-│   │   │   │   └── ListingService.java            # Listing API integration
+│   │   │   │   ├── ListingService.java            # Listing API integration
+│   │   │   │   ├── EmailNotificationService.java  # Email notification service
+│   │   │   │   └── NotificationPreferenceService.java  # Preference management
 │   │   │   ├── repository/
 │   │   │   │   ├── ConversationRepository.java    # Conversation data access
-│   │   │   │   └── MessageRepository.java        # Message data access
+│   │   │   │   ├── MessageRepository.java         # Message data access
+│   │   │   │   └── NotificationPreferenceRepository.java  # Preference data access
 │   │   │   ├── model/
 │   │   │   │   ├── Conversation.java              # Conversation entity
-│   │   │   │   └── Message.java                   # Message entity
+│   │   │   │   ├── Message.java                   # Message entity
+│   │   │   │   └── NotificationPreference.java   # Notification preference entity
 │   │   │   ├── dto/
 │   │   │   │   ├── ConversationResponse.java     # Conversation DTO
 │   │   │   │   ├── MessageResponse.java           # Message DTO
 │   │   │   │   ├── CreateMessageRequest.java     # Request DTO
 │   │   │   │   ├── SendMessageRequest.java        # Request DTO
-│   │   │   │   └── MessageCountResponse.java      # Response DTO
+│   │   │   │   ├── MessageCountResponse.java      # Response DTO
+│   │   │   │   ├── NotificationPreferenceResponse.java  # Preference response DTO
+│   │   │   │   └── UpdateNotificationPreferenceRequest.java  # Preference request DTO
 │   │   │   ├── security/
 │   │   │   │   ├── JwtUtil.java                   # JWT parsing utilities
 │   │   │   │   ├── JwtHelper.java                 # JWT extraction helper
@@ -838,14 +1080,18 @@ communication/
 │   │   └── resources/
 │   │       ├── application.yml                    # Configuration
 │   │       └── db/migration/
-│   │           └── V6__communication_chat_tables.sql  # Database migration
+│   │           ├── V6__communication_chat_tables.sql  # Database migration
+│   │           └── V7__notification_preferences.sql  # Notification preferences migration
 │   └── test/
 │       └── java/com/commandlinecommandos/communication/
 │           ├── controller/
-│           │   └── ChatControllerTest.java        # Controller tests
+│           │   ├── ChatControllerTest.java         # Controller tests
+│           │   └── NotificationPreferenceControllerTest.java  # Preference controller tests
 │           └── service/
 │               ├── ChatServiceTest.java            # Service tests
-│               └── ListingServiceTest.java         # Integration tests
+│               ├── ListingServiceTest.java         # Integration tests
+│               ├── EmailNotificationServiceTest.java  # Email notification tests
+│               └── NotificationPreferenceServiceTest.java  # Preference service tests
 ├── Dockerfile
 ├── Makefile
 ├── pom.xml
@@ -908,10 +1154,14 @@ SPRING_PROFILES_ACTIVE=prod ./mvnw spring-boot:run
 
 Current test coverage includes:
 - ✅ ChatController endpoints
+- ✅ NotificationPreferenceController endpoints
 - ✅ ChatService business logic
+- ✅ EmailNotificationService functionality
+- ✅ NotificationPreferenceService operations
 - ✅ ListingService integration
 - ✅ Exception handling
 - ✅ Authorization checks
+- ✅ Email notification integration
 
 ### Example Test
 
