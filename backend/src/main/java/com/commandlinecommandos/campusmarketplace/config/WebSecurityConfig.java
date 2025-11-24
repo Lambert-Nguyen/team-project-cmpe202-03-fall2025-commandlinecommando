@@ -130,8 +130,10 @@ public class WebSecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",           // React development server
             "http://localhost:3001",           // Alternative React port
+            "http://localhost:3002",           // Alternative React port
             "http://127.0.0.1:3000",          // Localhost alternative
             "http://127.0.0.1:3001",          // Localhost alternative
+            "http://127.0.0.1:3002",          // Localhost alternative
             "https://campus-marketplace.sjsu.edu",  // Production domain
             "https://*.sjsu.edu"              // SJSU subdomains
         ));

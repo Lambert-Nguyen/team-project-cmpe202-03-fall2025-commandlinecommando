@@ -29,12 +29,16 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
 public class AuthService {
     
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -51,14 +55,23 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
-    @Autowired
-    private UniversityRepository universityRepository;
+    // In-memory store for password reset tokens (for development)
+    // In production, this should be stored in database with expiration
+    private final Map<String, PasswordResetToken> resetTokens = new ConcurrentHashMap<>();
     
-    @Autowired(required = false)
-    private LoginAttemptService loginAttemptService;
-    
-    @Autowired(required = false)
-    private AuditService auditService;
+    private static class PasswordResetToken {
+        String email;
+        LocalDateTime expiresAt;
+        
+        PasswordResetToken(String email, LocalDateTime expiresAt) {
+            this.email = email;
+            this.expiresAt = expiresAt;
+        }
+        
+        boolean isExpired() {
+            return LocalDateTime.now().isAfter(expiresAt);
+        }
+    }
     
     public AuthResponse login(AuthRequest authRequest) throws AuthenticationException {
         String username = authRequest.getUsername();
@@ -300,43 +313,53 @@ public class AuthService {
         return response;
     }
     
-    /**
-     * Find or create university based on email domain
-     * Falls back to default SJSU university if domain not found
-     */
-    private University findOrCreateUniversityForEmail(String email) {
-        if (email == null || !email.contains("@")) {
-            // Default to SJSU if email is invalid
-            return universityRepository.findByDomainIgnoreCase("sjsu.edu")
-                .orElseGet(() -> getDefaultUniversity());
+    public String requestPasswordReset(String email) throws BadCredentialsException {
+        // Find user by email
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            // Don't reveal if email exists for security
+            throw new BadCredentialsException("If an account exists with this email, a password reset link has been sent.");
         }
         
-        String domain = email.substring(email.indexOf("@") + 1).toLowerCase();
+        User user = userOpt.get();
         
-        // Try to find university by domain
-        return universityRepository.findByDomainIgnoreCase(domain)
-            .orElseGet(() -> {
-                // If not found, use default SJSU university
-                log.warn("University not found for domain: {}, using default SJSU", domain);
-                return getDefaultUniversity();
-            });
+        // Generate reset token
+        String resetToken = UUID.randomUUID().toString();
+        
+        // Store token with expiration (1 hour)
+        resetTokens.put(resetToken, new PasswordResetToken(email, LocalDateTime.now().plusHours(1)));
+        
+        // In production, send email with reset link
+        // For development, we return the token directly
+        logger.info("Password reset token generated for email: {}", email);
+        
+        return resetToken;
     }
     
-    /**
-     * Get default university (SJSU) or create it if it doesn't exist
-     */
-    private University getDefaultUniversity() {
-        return universityRepository.findByDomainIgnoreCase("sjsu.edu")
-            .orElseGet(() -> {
-                log.info("Creating default SJSU university");
-                University defaultUni = new University();
-                defaultUni.setName("San Jose State University");
-                defaultUni.setDomain("sjsu.edu");
-                defaultUni.setCity("San Jose");
-                defaultUni.setState("California");
-                defaultUni.setCountry("USA");
-                defaultUni.setActive(true);
-                return universityRepository.save(defaultUni);
-            });
+    public void resetPassword(String token, String newPassword) throws BadCredentialsException {
+        // Find token
+        PasswordResetToken resetToken = resetTokens.get(token);
+        if (resetToken == null || resetToken.isExpired()) {
+            resetTokens.remove(token); // Clean up expired token
+            throw new BadCredentialsException("Invalid or expired reset token");
+        }
+        
+        // Find user by email
+        Optional<User> userOpt = userRepository.findByEmail(resetToken.email);
+        if (userOpt.isEmpty()) {
+            resetTokens.remove(token);
+            throw new BadCredentialsException("User not found");
+        }
+        
+        User user = userOpt.get();
+        
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        
+        // Remove used token
+        resetTokens.remove(token);
+        
+        logger.info("Password reset successful for user: {}", user.getUsername());
     }
 }

@@ -104,116 +104,18 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
            "ORDER BY COALESCE(p.viewCount, 0) DESC, p.createdAt DESC")
     List<Product> findTopByViews(@Param("university") University university, Pageable pageable);
     
-    // ========================================================================
-    // ENHANCED SEARCH METHODS FOR EPIC 3
-    // ========================================================================
+    /**
+     * Find all active products with approved status
+     */
+    Page<Product> findByIsActiveTrueAndModerationStatus(ModerationStatus moderationStatus, Pageable pageable);
     
     /**
-     * Full-text search using PostgreSQL ts_rank for relevance scoring
-     * Searches title and description using search_vector column
-     * 
-     * @param universityId University UUID
-     * @param query Search query
-     * @return List of products ordered by relevance
+     * Find products by category with approved status
      */
-    @Query(value = "SELECT p.*, ts_rank(p.search_vector, plainto_tsquery('english', :query)) AS rank " +
-           "FROM products p " +
-           "WHERE p.university_id = :universityId " +
-           "AND p.is_active = true " +
-           "AND p.moderation_status = 'APPROVED' " +
-           "AND p.search_vector @@ plainto_tsquery('english', :query) " +
-           "ORDER BY rank DESC, p.created_at DESC",
-           countQuery = "SELECT COUNT(*) FROM products p " +
-                       "WHERE p.university_id = :universityId " +
-                       "AND p.is_active = true " +
-                       "AND p.moderation_status = 'APPROVED' " +
-                       "AND p.search_vector @@ plainto_tsquery('english', :query)",
-           nativeQuery = true)
-    Page<Product> searchWithFullText(@Param("universityId") UUID universityId,
-                                      @Param("query") String query,
-                                      Pageable pageable);
-    
-    /**
-     * Autocomplete suggestions using trigram similarity (PostgreSQL only)
-     * Returns distinct product titles similar to the query
-     * 
-     * @param universityId University UUID
-     * @param query Search query (minimum 2 characters)
-     * @return List of title suggestions
-     */
-    @Query(value = "SELECT DISTINCT p.title " +
-           "FROM products p " +
-           "WHERE p.university_id = :universityId " +
-           "AND p.is_active = true " +
-           "AND p.moderation_status = 'APPROVED' " +
-           "AND similarity(p.title, :query) > 0.3 " +
-           "ORDER BY similarity(p.title, :query) DESC " +
-           "LIMIT 10",
-           nativeQuery = true)
-    List<String> findTitleSuggestions(@Param("universityId") UUID universityId,
-                                       @Param("query") String query);
-    
-    /**
-     * Autocomplete suggestions using LIKE (H2 compatible fallback)
-     * Returns distinct product titles matching the query
-     * 
-     * @param universityId University UUID
-     * @param query Search query (minimum 2 characters)
-     * @return List of title suggestions
-     */
-    @Query(value = "SELECT DISTINCT p.title " +
-           "FROM products p " +
-           "WHERE p.university_id = :universityId " +
-           "AND p.is_active = true " +
-           "AND p.moderation_status = 'APPROVED' " +
-           "AND LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "ORDER BY p.title " +
-           "LIMIT 10",
-           nativeQuery = true)
-    List<String> findTitleSuggestionsLike(@Param("universityId") UUID universityId,
-                                           @Param("query") String query);
-    
-    /**
-     * Fuzzy search with typo tolerance using trigram similarity
-     * Uses % operator for similarity matching
-     * 
-     * @param universityId University UUID
-     * @param query Search query
-     * @param pageable Pagination
-     * @return List of products matching with typo tolerance
-     */
-    @Query(value = "SELECT p.* FROM products p " +
-           "WHERE p.university_id = :universityId " +
-           "AND p.is_active = true " +
-           "AND p.moderation_status = 'APPROVED' " +
-           "AND (p.title % :query OR p.description % :query) " +
-           "ORDER BY similarity(p.title, :query) DESC, p.created_at DESC",
-           countQuery = "SELECT COUNT(*) FROM products p " +
-                       "WHERE p.university_id = :universityId " +
-                       "AND p.is_active = true " +
-                       "AND p.moderation_status = 'APPROVED' " +
-                       "AND (p.title % :query OR p.description % :query)",
-           nativeQuery = true)
-    Page<Product> fuzzySearch(@Param("universityId") UUID universityId,
-                               @Param("query") String query,
-                               Pageable pageable);
-    
-    /**
-     * Find products created after a certain date
-     * Used for "recent" filters (last 24h, 7d, 30d, 90d)
-     * 
-     * @param university University
-     * @param dateFrom Minimum creation date
-     * @param pageable Pagination
-     * @return Page of products
-     */
-    @Query("SELECT p FROM Product p WHERE p.university = :university " +
-           "AND p.isActive = true " +
-           "AND p.moderationStatus = 'APPROVED' " +
-           "AND p.createdAt >= :dateFrom " +
-           "ORDER BY p.createdAt DESC")
-    Page<Product> findRecentProducts(@Param("university") University university,
-                                     @Param("dateFrom") LocalDateTime dateFrom,
-                                     Pageable pageable);
+    Page<Product> findByCategoryAndIsActiveTrueAndModerationStatus(
+        ProductCategory category,
+        ModerationStatus moderationStatus,
+        Pageable pageable
+    );
 }
 
