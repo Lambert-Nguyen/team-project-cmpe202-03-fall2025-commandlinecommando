@@ -1,7 +1,5 @@
 package com.commandlinecommandos.campusmarketplace.config;
 
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,11 +9,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Configuration
 public class RateLimitingConfig {
-
-    @Bean
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("rateLimitBuckets");
-    }
 
     @Bean
     public ConcurrentHashMap<String, RateLimitData> rateLimitBuckets() {
