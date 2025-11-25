@@ -26,6 +26,8 @@ The Communication Service is a microservice within the Campus Marketplace ecosys
 - **Conversation Management**: Creates and manages conversations between buyers and sellers
 - **Message Exchange**: Enables real-time messaging within conversations
 - **Read/Unread Tracking**: Tracks message read status for better user experience
+- **Email Notifications**: Sends email notifications when users receive new messages
+- **Notification Preferences**: User-configurable email notification settings
 - **Listing Integration**: Automatically links conversations to marketplace listings
 - **Security**: JWT-based authentication with authorization checks
 
@@ -51,20 +53,26 @@ The Communication Service is a microservice within the Campus Marketplace ecosys
 │     Communication Service           │
 │  ┌───────────────────────────────┐  │
 │  │   ChatController              │  │
+│  │   NotificationPreferenceCtrl  │  │
 │  │   - Message Endpoints         │  │
 │  │   - Conversation Endpoints    │  │
+│  │   - Notification Endpoints    │  │
 │  └───────────┬───────────────────┘  │
 │              │                      │
 │  ┌───────────▼───────────────────┐  │
 │  │   ChatService                 │  │
+│  │   EmailNotificationService    │  │
+│  │   NotificationPreferenceSvc   │  │
 │  │   - Business Logic            │  │
 │  │   - Authorization Checks      │  │
+│  │   - Email Delivery            │  │
 │  └───────────┬───────────────────┘  │
 │              │                      │
 │  ┌───────────▼───────────────────┐  │
 │  │   Repository Layer            │  │
 │  │   - ConversationRepository    │  │
 │  │   - MessageRepository         │  │
+│  │   - NotificationPrefRepo      │  │
 │  └───────────┬───────────────────┘  │
 └──────────────┼──────────────────────┘
                │
@@ -75,11 +83,11 @@ The Communication Service is a microservice within the Campus Marketplace ecosys
         └──────────────┘
                │
                ▼
-        ┌──────────────┐      ┌──────────────┐
-        │ Listing API  │      │  Backend API │
-        │  (Verify     │      │  (User Info) │
-        │  Listings)   │      │              │
-        └──────────────┘      └──────────────┘
+        ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+        │ Listing API  │      │  Backend API │      │  SMTP Server │
+        │  (Verify     │      │  (User Info) │      │  (Email      │
+        │  Listings)   │      │              │      │  Delivery)   │
+        └──────────────┘      └──────────────┘      └──────────────┘
 ```
 
 ## Features
@@ -104,16 +112,24 @@ The Communication Service is a microservice within the Campus Marketplace ecosys
    - Unread message count per conversation
    - User-specific read status (buyer vs seller)
 
-4. **Authorization & Security**
+4. **Email Notifications**
+   - Automatic email notifications when users receive new messages
+   - User-configurable notification preferences
+   - Personalized email content with recipient name and listing details
+   - Non-blocking email delivery (failures don't prevent message delivery)
+   - Global and per-user notification controls
+
+5. **Authorization & Security**
    - JWT token validation
    - Participant verification (only conversation participants can access)
    - Prevents self-messaging (buyers can't message their own listings)
    - Listing existence verification
 
-5. **Integration**
-   - Listing API integration for listing verification
+6. **Integration**
+   - Listing API integration for listing verification and title retrieval
    - Backend service integration for user management
    - Database schema compatibility with main marketplace
+   - SMTP integration for email delivery
 
 ## Technology Stack
 
@@ -210,7 +226,6 @@ Authorization: Bearer <your-jwt-token>
 **JWT Token Requirements:**
 - Must be signed with the same secret as the backend service
 - Must contain `userId` claim (UUID, converted to Long)
-- Must contain `role` claim (e.g., "STUDENT", "ADMIN")
 
 ### Endpoints
 
@@ -1326,4 +1341,5 @@ For issues and questions:
 
 **Last Updated**: November 2025  
 **Version**: 0.0.1-SNAPSHOT  
-**Spring Boot Version**: 3.5.6
+**Spring Boot Version**: 3.5.6  
+**Features**: Chat messaging, Email notifications, Notification preferences
