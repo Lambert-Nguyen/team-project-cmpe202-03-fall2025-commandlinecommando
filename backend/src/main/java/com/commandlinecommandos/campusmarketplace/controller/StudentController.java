@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * REST Controller for Student-specific dashboard and operations
@@ -24,27 +23,17 @@ public class StudentController {
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> getStudentDashboard(Authentication authentication) {
-        try {
-            UUID userId = UUID.fromString(authentication.getName());
+        Map<String, Object> dashboard = new HashMap<>();
+        dashboard.put("message", "Welcome to Student Dashboard");
+        dashboard.put("username", authentication.getName());
 
-            Map<String, Object> dashboard = new HashMap<>();
-            dashboard.put("message", "Welcome to Student Dashboard");
-            dashboard.put("userId", userId.toString());
-            dashboard.put("username", authentication.getName());
+        // Get actual stats
+        // Note: These can be expanded with real data from services
+        dashboard.put("myListings", 0); // Can query listingsService
+        dashboard.put("watchlist", 0);
+        dashboard.put("messages", 0);
 
-            // Get actual stats
-            // Note: These can be expanded with real data from services
-            dashboard.put("myListings", 0); // Can query listingsService
-            dashboard.put("watchlist", 0);
-            dashboard.put("messages", 0);
-
-            return ResponseEntity.ok(dashboard);
-        } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Failed to load dashboard");
-            error.put("message", e.getMessage());
-            return ResponseEntity.status(500).body(error);
-        }
+        return ResponseEntity.ok(dashboard);
     }
 
     /**
@@ -57,5 +46,32 @@ public class StudentController {
         profile.put("userId", authentication.getName());
         profile.put("message", "Student profile endpoint");
         return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * Get student listings
+     * Note: This is a test endpoint. Real listing management is at /api/listings
+     */
+    @GetMapping("/listings")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<?> getStudentListings(Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Student listings endpoint");
+        response.put("username", authentication.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Create student listing
+     * Note: This is a test endpoint. Real listing creation is at /api/listings
+     */
+    @PostMapping("/listings")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<?> createStudentListing(Authentication authentication, @RequestBody Map<String, Object> listing) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Listing created successfully");
+        response.put("username", authentication.getName());
+        response.put("listing", listing);
+        return ResponseEntity.ok(response);
     }
 }

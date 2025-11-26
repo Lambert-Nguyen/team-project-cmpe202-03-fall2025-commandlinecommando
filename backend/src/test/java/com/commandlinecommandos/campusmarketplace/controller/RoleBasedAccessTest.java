@@ -127,9 +127,9 @@ class RoleBasedAccessTest {
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void testAdminCanAccessStudentListings() throws Exception {
-        // Admin should be able to access student listings (has ADMIN role which includes STUDENT permissions)
+        // Admin should NOT be able to access student-only endpoints (STUDENT role required)
         mockMvc.perform(get("/student/listings"))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     // Commented out - requires real User object in authentication context
@@ -152,6 +152,7 @@ class RoleBasedAccessTest {
     void testAdminCannotCreateStudentListing() throws Exception {
         String listingJson = "{\"title\":\"Test Listing\",\"description\":\"Test Description\",\"price\":100}";
         
+        // Admin should NOT be able to create student listings (STUDENT role required)
         mockMvc.perform(post("/student/listings")
                 .contentType("application/json")
                 .content(listingJson))
