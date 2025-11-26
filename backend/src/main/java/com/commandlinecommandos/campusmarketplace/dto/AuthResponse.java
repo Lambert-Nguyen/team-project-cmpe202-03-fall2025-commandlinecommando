@@ -5,7 +5,7 @@ import com.commandlinecommandos.campusmarketplace.model.UserRole;
 import java.util.UUID;
 
 public class AuthResponse {
-    
+
     private String accessToken;
     private String refreshToken;
     private String tokenType = "Bearer";
@@ -18,6 +18,16 @@ public class AuthResponse {
     private String lastName;
     private String phone;
     private boolean active;
+
+    // Additional fields for frontend mockdata compatibility
+    private String verificationStatus;
+    private String universityId;
+    private String studentId;
+    private String major;
+    private Integer graduationYear;
+    private String avatarUrl;
+    private String createdAt;  // ISO-8601 formatted
+    private String lastLoginAt;  // ISO-8601 formatted
     
     // Constructors
     public AuthResponse() {
@@ -129,5 +139,69 @@ public class AuthResponse {
     
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+    public String getUniversityId() {
+        return universityId;
+    }
+
+    public void setUniversityId(String universityId) {
+        this.universityId = universityId;
+    }
+
+    public String getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public Integer getGraduationYear() {
+        return graduationYear;
+    }
+
+    public void setGraduationYear(Integer graduationYear) {
+        this.graduationYear = graduationYear;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(String lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 }

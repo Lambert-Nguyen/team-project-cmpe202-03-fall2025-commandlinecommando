@@ -1,6 +1,7 @@
 package com.commandlinecommandos.campusmarketplace.listing.controller;
 
 import com.commandlinecommandos.campusmarketplace.dto.ErrorResponse;
+import com.commandlinecommandos.campusmarketplace.dto.ListingDetailResponse;
 import com.commandlinecommandos.campusmarketplace.model.Product;
 import com.commandlinecommandos.campusmarketplace.model.ProductCategory;
 import com.commandlinecommandos.campusmarketplace.model.User;
@@ -67,9 +68,9 @@ public class ListingController {
                 productsPage = listingsService.getAllListings(page, size);
             }
 
-            // Convert to DTO format
-            List<Map<String, Object>> listings = productsPage.getContent().stream()
-                .map(listingsService::productToDto)
+            // Convert to new DTO format matching frontend mockdata
+            List<ListingDetailResponse> listings = productsPage.getContent().stream()
+                .map(listingsService::toListingDetailResponse)
                 .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();
@@ -105,7 +106,9 @@ public class ListingController {
         try {
             log.info("Fetching listing with ID: {}", id);
             Product product = listingsService.getListingById(id);
-            Map<String, Object> listing = listingsService.productToDto(product);
+            
+            // Use new DTO format matching frontend mockdata
+            ListingDetailResponse listing = listingsService.toListingDetailResponse(product);
             return ResponseEntity.ok(listing);
         } catch (Exception e) {
             log.error("Error fetching listing {}: {}", id, e.getMessage());
@@ -137,7 +140,7 @@ public class ListingController {
             Product product = listingsService.createListing(listing);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Listing created successfully");
-            response.put("listing", listingsService.productToDto(product));
+            response.put("listing", listingsService.toListingDetailResponse(product));
 
             log.info("Listing created successfully with ID: {}", product.getProductId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -170,7 +173,7 @@ public class ListingController {
             Product product = listingsService.updateListing(id, updates, authentication.getName());
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Listing updated successfully");
-            response.put("listing", listingsService.productToDto(product));
+            response.put("listing", listingsService.toListingDetailResponse(product));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -232,8 +235,8 @@ public class ListingController {
 
             Page<Product> productsPage = listingsService.getListingsBySeller(sellerId, page, size);
 
-            List<Map<String, Object>> listings = productsPage.getContent().stream()
-                .map(listingsService::productToDto)
+            List<ListingDetailResponse> listings = productsPage.getContent().stream()
+                .map(listingsService::toListingDetailResponse)
                 .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();

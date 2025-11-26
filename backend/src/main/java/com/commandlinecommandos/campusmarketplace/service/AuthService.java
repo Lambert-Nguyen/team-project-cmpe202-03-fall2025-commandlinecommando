@@ -147,14 +147,7 @@ public class AuthService {
                 auditService.logLogin(user, true);
             }
             
-            AuthResponse response = new AuthResponse();
-            response.setAccessToken(accessToken);
-            response.setRefreshToken(refreshTokenValue);
-            response.setTokenType("Bearer");
-            response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
-            response.setRole(user.getRole());
-            response.setUsername(user.getUsername());
-            response.setUserId(user.getUserId());
+            AuthResponse response = buildAuthResponse(user, accessToken, refreshTokenValue);
             return response;
             
         } catch (AuthenticationException e) {
@@ -205,15 +198,8 @@ public class AuthService {
         
         // Generate new access token
         String newAccessToken = jwtUtil.generateAccessToken(user);
-        
-        AuthResponse response = new AuthResponse();
-        response.setAccessToken(newAccessToken);
-        response.setRefreshToken(refreshTokenValue); // Keep the same refresh token
-        response.setTokenType("Bearer");
-        response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
-        response.setRole(user.getRole());
-        response.setUsername(user.getUsername());
-        response.setUserId(user.getUserId());
+
+        AuthResponse response = buildAuthResponse(user, newAccessToken, refreshTokenValue);
         return response;
     }
     
@@ -305,20 +291,8 @@ public class AuthService {
         refreshToken.setDeviceInfo("Registration");
         
         refreshTokenRepository.save(refreshToken);
-        
-        AuthResponse response = new AuthResponse();
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(refreshTokenValue);
-        response.setTokenType("Bearer");
-        response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
-        response.setRole(user.getRole());
-        response.setUsername(user.getUsername());
-        response.setUserId(user.getUserId());
-        response.setEmail(user.getEmail());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setPhone(user.getPhone());
-        response.setActive(user.isActive());
+
+        AuthResponse response = buildAuthResponse(user, accessToken, refreshTokenValue);
         return response;
     }
     
@@ -399,7 +373,69 @@ public class AuthService {
         
         // Remove used token
         resetTokens.remove(token);
-        
+
         logger.info("Password reset successful for user: {}", user.getUsername());
+    }
+
+    /**
+     * Map User entity to UserResponse DTO
+     */
+    public com.commandlinecommandos.campusmarketplace.dto.UserResponse toUserResponse(User user) {
+        return com.commandlinecommandos.campusmarketplace.dto.UserResponse.builder()
+            .userId(user.getUserId())
+            .username(user.getUsername())
+            .email(user.getEmail())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .phone(user.getPhone())
+            .avatarUrl(user.getAvatarUrl())
+            .role(user.getRole())
+            .verificationStatus(user.getVerificationStatus())
+            .isActive(user.isActive())
+            .lastLoginAt(user.getLastLoginAt())
+            .emailVerifiedAt(user.getEmailVerifiedAt())
+            .createdAt(user.getCreatedAt())
+            .updatedAt(user.getUpdatedAt())
+            .studentId(user.getStudentId())
+            .universityEmail(user.getUniversityEmail())
+            .graduationYear(user.getGraduationYear())
+            .major(user.getMajor())
+            .universityId(user.getUniversity() != null ? user.getUniversity().getUniversityId() : null)
+            .universityName(user.getUniversity() != null ? user.getUniversity().getName() : null)
+            .preferences(user.getPreferences())
+            .build();
+    }
+
+    /**
+     * Helper method to build AuthResponse from User with all fields for frontend compatibility
+     */
+    private AuthResponse buildAuthResponse(User user, String accessToken, String refreshToken) {
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        response.setTokenType("Bearer");
+        response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
+
+        // Basic user info
+        response.setRole(user.getRole());
+        response.setUsername(user.getUsername());
+        response.setUserId(user.getUserId());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setPhone(user.getPhone());
+        response.setActive(user.isActive());
+
+        // Additional fields for frontend mockdata compatibility
+        response.setVerificationStatus(user.getVerificationStatus() != null ? user.getVerificationStatus().name() : null);
+        response.setUniversityId(user.getUniversity() != null ? user.getUniversity().getUniversityId().toString() : null);
+        response.setStudentId(user.getStudentId());
+        response.setMajor(user.getMajor());
+        response.setGraduationYear(user.getGraduationYear());
+        response.setAvatarUrl(user.getAvatarUrl());
+        response.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
+        response.setLastLoginAt(user.getLastLoginAt() != null ? user.getLastLoginAt().toString() : null);
+
+        return response;
     }
 }
