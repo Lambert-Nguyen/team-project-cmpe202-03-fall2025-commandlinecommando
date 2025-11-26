@@ -3,6 +3,8 @@ package com.commandlinecommandos.campusmarketplace.listing.controller;
 import com.commandlinecommandos.campusmarketplace.dto.ErrorResponse;
 import com.commandlinecommandos.campusmarketplace.model.Product;
 import com.commandlinecommandos.campusmarketplace.model.ProductCategory;
+import com.commandlinecommandos.campusmarketplace.model.User;
+import com.commandlinecommandos.campusmarketplace.repository.UserRepository;
 import com.commandlinecommandos.campusmarketplace.service.ListingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +41,9 @@ public class ListingController {
 
     @Autowired
     private ListingsService listingsService;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Get all listings with pagination and optional filtering
@@ -261,10 +266,14 @@ public class ListingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         try {
-            UUID userId = UUID.fromString(authentication.getName());
-            log.info("Fetching listings for authenticated user: {}", userId);
+            String username = authentication.getName();
+            log.info("Fetching listings for authenticated user: {}", username);
+            
+            // Find user by username to get their ID
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            return getListingsBySeller(userId, page, size);
+            return getListingsBySeller(user.getUserId(), page, size);
         } catch (Exception e) {
             log.error("Error fetching user's listings: {}", e.getMessage());
             ErrorResponse error = new ErrorResponse(

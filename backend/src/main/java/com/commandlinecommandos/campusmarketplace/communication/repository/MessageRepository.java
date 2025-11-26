@@ -39,4 +39,12 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query("SELECT m FROM Message m WHERE (m.conversation.buyerId = :userId OR m.conversation.sellerId = :userId) " +
            "AND m.senderId != :userId AND m.isRead = false ORDER BY m.createdAt DESC")
     List<Message> findUnreadMessagesForUser(@Param("userId") UUID userId);
+    
+    /**
+     * Mark a specific message as read
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Message m SET m.isRead = true WHERE m.messageId = :messageId " +
+           "AND m.senderId != :userId AND m.isRead = false")
+    int markSingleMessageAsRead(@Param("messageId") UUID messageId, @Param("userId") UUID userId);
 }

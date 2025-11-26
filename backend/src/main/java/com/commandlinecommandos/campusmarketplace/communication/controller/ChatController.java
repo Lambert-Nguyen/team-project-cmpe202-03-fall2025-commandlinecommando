@@ -224,6 +224,61 @@ public class ChatController {
     }
 
     /**
+     * Get total unread message count for user across all conversations
+     * GET /api/chat/unread-count
+     */
+    @GetMapping("/unread-count")
+    public ResponseEntity<?> getUnreadCount(HttpServletRequest httpRequest) {
+        String token = httpRequest.getHeader("Authorization");
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        token = token.substring(7);
+        
+        UUID userId = jwtUtil.extractUserId(token);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        logger.info("User {} getting total unread count", userId);
+        
+        // Get all conversations for user and sum up unread counts
+        List<Conversation> conversations = chatService.getUserConversations(userId);
+        long totalUnread = conversations.stream()
+            .mapToLong(conv -> chatService.getUnreadCount(conv.getConversationId(), userId))
+            .sum();
+        
+        return ResponseEntity.ok(new UnreadCountResponse(totalUnread));
+    }
+
+    /**
+     * Mark a specific message as read
+     * PUT /api/chat/messages/{messageId}/read
+     */
+    @PutMapping("/messages/{messageId}/read")
+    public ResponseEntity<?> markMessageAsRead(
+            @PathVariable UUID messageId,
+            HttpServletRequest httpRequest) {
+        
+        String token = httpRequest.getHeader("Authorization");
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        token = token.substring(7);
+        
+        UUID userId = jwtUtil.extractUserId(token);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        logger.info("User {} marking message {} as read", userId, messageId);
+        
+        chatService.markSingleMessageAsRead(messageId, userId);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * Get or create a conversation for a listing
      * GET /api/chat/conversations/listing/{listingId}
      */

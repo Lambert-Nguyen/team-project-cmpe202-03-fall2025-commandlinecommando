@@ -153,12 +153,12 @@ public class ListingsService {
     /**
      * Update an existing listing
      */
-    public Product updateListing(UUID listingId, Map<String, Object> updates, String userId) {
+    public Product updateListing(UUID listingId, Map<String, Object> updates, String username) {
         Product product = productRepository.findById(listingId)
             .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
 
         // Verify ownership (unless admin)
-        if (!product.getSeller().getUserId().toString().equals(userId)) {
+        if (!product.getSeller().getUsername().equals(username)) {
             throw new RuntimeException("Unauthorized: You can only update your own listings");
         }
 
@@ -212,12 +212,12 @@ public class ListingsService {
     /**
      * Delete a listing (soft delete by setting isActive to false)
      */
-    public void deleteListing(UUID listingId, String userId) {
+    public void deleteListing(UUID listingId, String username) {
         Product product = productRepository.findById(listingId)
             .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
 
         // Verify ownership (unless admin)
-        if (!product.getSeller().getUserId().toString().equals(userId)) {
+        if (!product.getSeller().getUsername().equals(username)) {
             throw new RuntimeException("Unauthorized: You can only delete your own listings");
         }
 

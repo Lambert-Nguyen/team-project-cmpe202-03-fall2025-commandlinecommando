@@ -240,4 +240,30 @@ public class ChatService {
 
         return messageRepository.countUnreadMessages(conversationId, userId);
     }
+    
+    /**
+     * Marks a single message as read.
+     * 
+     * @param messageId The message ID
+     * @param userId The user ID marking message as read
+     */
+    @Transactional
+    public void markSingleMessageAsRead(UUID messageId, UUID userId) {
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
+        
+        // Verify user is a participant in the conversation
+        Conversation conversation = message.getConversation();
+        if (!conversation.isParticipant(userId)) {
+            throw new UnauthorizedAccessException(
+                "User " + userId + " is not a participant in conversation " + conversation.getConversationId()
+            );
+        }
+        
+        // Only mark as read if user is not the sender
+        if (!message.getSenderId().equals(userId) && !message.getIsRead()) {
+            messageRepository.markSingleMessageAsRead(messageId, userId);
+            logger.info("Marked message {} as read for user {}", messageId, userId);
+        }
+    }
 }

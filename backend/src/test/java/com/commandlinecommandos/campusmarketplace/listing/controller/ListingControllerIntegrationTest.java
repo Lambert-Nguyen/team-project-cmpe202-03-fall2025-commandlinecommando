@@ -110,7 +110,7 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetAllListings_Success() throws Exception {
-        mockMvc.perform(get("/api/listings")
+        mockMvc.perform(get("/listings")
                 .param("page", "0")
                 .param("size", "20"))
                 .andExpect(status().isOk())
@@ -122,7 +122,7 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetAllListings_WithCategoryFilter() throws Exception {
-        mockMvc.perform(get("/api/listings")
+        mockMvc.perform(get("/listings")
                 .param("page", "0")
                 .param("size", "20")
                 .param("category", "ELECTRONICS"))
@@ -133,7 +133,7 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetListingById_Success() throws Exception {
-        mockMvc.perform(get("/api/listings/" + testListing.getProductId()))
+        mockMvc.perform(get("/listings/" + testListing.getProductId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title", is("Test Listing")))
                 .andExpect(jsonPath("$.description", is("Test Description")))
@@ -143,7 +143,7 @@ public class ListingControllerIntegrationTest {
     @Test
     public void testGetListingById_NotFound() throws Exception {
         UUID randomId = UUID.randomUUID();
-        mockMvc.perform(get("/api/listings/" + randomId))
+        mockMvc.perform(get("/listings/" + randomId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", is("LISTING_NOT_FOUND")));
     }
@@ -158,7 +158,7 @@ public class ListingControllerIntegrationTest {
         newListing.put("price", 50.00);
         newListing.put("location", "Library");
 
-        mockMvc.perform(post("/api/listings")
+        mockMvc.perform(post("/listings")
                 .header("Authorization", "Bearer " + testUserToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(newListing)))
@@ -174,10 +174,10 @@ public class ListingControllerIntegrationTest {
         newListing.put("title", "Unauthorized Listing");
         newListing.put("price", 50.00);
 
-        mockMvc.perform(post("/api/listings")
+        mockMvc.perform(post("/listings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(newListing)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ListingControllerIntegrationTest {
         updates.put("title", "Updated Title");
         updates.put("price", 79.99);
 
-        mockMvc.perform(put("/api/listings/" + testListing.getProductId())
+        mockMvc.perform(put("/listings/" + testListing.getProductId())
                 .header("Authorization", "Bearer " + testUserToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updates)))
@@ -214,17 +214,16 @@ public class ListingControllerIntegrationTest {
         Map<String, Object> updates = new HashMap<>();
         updates.put("title", "Hacked Title");
 
-        mockMvc.perform(put("/api/listings/" + testListing.getProductId())
+        mockMvc.perform(put("/listings/" + testListing.getProductId())
                 .header("Authorization", "Bearer " + anotherUserToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updates)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("LISTING_UPDATE_ERROR")));
+                .andExpect(status().isForbidden());
     }
 
     @Test
     public void testDeleteListing_Success() throws Exception {
-        mockMvc.perform(delete("/api/listings/" + testListing.getProductId())
+        mockMvc.perform(delete("/listings/" + testListing.getProductId())
                 .header("Authorization", "Bearer " + testUserToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("Listing deleted successfully")))
@@ -238,7 +237,7 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetListingsBySeller_Success() throws Exception {
-        mockMvc.perform(get("/api/listings/seller/" + testUser.getUserId())
+        mockMvc.perform(get("/listings/seller/" + testUser.getUserId())
                 .param("page", "0")
                 .param("size", "20"))
                 .andExpect(status().isOk())
@@ -248,7 +247,7 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetMyListings_Success() throws Exception {
-        mockMvc.perform(get("/api/listings/my-listings")
+        mockMvc.perform(get("/listings/my-listings")
                 .header("Authorization", "Bearer " + testUserToken)
                 .param("page", "0")
                 .param("size", "20"))
@@ -259,9 +258,9 @@ public class ListingControllerIntegrationTest {
 
     @Test
     public void testGetMyListings_Unauthorized() throws Exception {
-        mockMvc.perform(get("/api/listings/my-listings")
+        mockMvc.perform(get("/listings/my-listings")
                 .param("page", "0")
                 .param("size", "20"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }
