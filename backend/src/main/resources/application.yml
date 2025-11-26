@@ -36,6 +36,7 @@ spring:
     locations: classpath:db/migrations
     baseline-on-migrate: true
     baseline-version: 0
+    mixed: true  # Allow mixing transactional and non-transactional statements
   
   # Mail Configuration
   mail:
@@ -169,7 +170,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate  # Use Flyway for schema management
+      ddl-auto: none  # Flyway handles all schema management
     show-sql: true  # Enable for debugging
     format-sql: true
     properties:
