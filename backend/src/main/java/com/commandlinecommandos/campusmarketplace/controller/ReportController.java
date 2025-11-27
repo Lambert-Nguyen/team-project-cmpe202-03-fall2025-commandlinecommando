@@ -2,6 +2,7 @@ package com.commandlinecommandos.campusmarketplace.controller;
 
 import com.commandlinecommandos.campusmarketplace.dto.SubmitReportRequest;
 import com.commandlinecommandos.campusmarketplace.dto.ResolveReportRequest;
+import com.commandlinecommandos.campusmarketplace.dto.ReportResponse;
 import com.commandlinecommandos.campusmarketplace.model.ModerationStatus;
 import com.commandlinecommandos.campusmarketplace.model.User;
 import com.commandlinecommandos.campusmarketplace.model.UserReport;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Controller for Report management
@@ -59,17 +61,8 @@ public class ReportController {
                 request.getDescription()
             );
             
-            // Return a simplified response to avoid Hibernate proxy serialization issues
-            Map<String, Object> response = new HashMap<>();
-            response.put("reportId", report.getReportId() != null ? report.getReportId().toString() : null);
-            response.put("reportType", report.getReportType());
-            response.put("reason", report.getReason());
-            response.put("description", report.getDescription());
-            response.put("status", report.getStatus() != null ? report.getStatus().toString() : "PENDING");
-            response.put("priority", report.getPriority());
-            response.put("createdAt", report.getCreatedAt());
-            response.put("reportedEntityId", report.getReportedEntityId() != null ? report.getReportedEntityId().toString() : null);
-            
+            // Use DTO to avoid Hibernate proxy serialization issues
+            ReportResponse response = new ReportResponse(report);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -81,93 +74,164 @@ public class ReportController {
      * Get report by ID
      */
     @GetMapping("/{reportId}")
-    public ResponseEntity<UserReport> getReport(@PathVariable UUID reportId) {
+    public ResponseEntity<ReportResponse> getReport(@PathVariable UUID reportId) {
         UserReport report = reportService.getReport(reportId);
-        return ResponseEntity.ok(report);
+        ReportResponse response = new ReportResponse(report);
+        return ResponseEntity.ok(response);
     }
     
     /**
      * Get user's submitted reports
      */
     @GetMapping("/my-reports")
-    public ResponseEntity<Page<UserReport>> getMyReports(Authentication auth, 
-                                                         Pageable pageable) {
-        User reporter = getCurrentUser(auth);
-        Page<UserReport> reports = reportService.getReportsByUser(reporter, pageable);
-        return ResponseEntity.ok(reports);
+    public ResponseEntity<?> getMyReports(Authentication auth, 
+                                         Pageable pageable) {
+        try {
+            User reporter = getCurrentUser(auth);
+            Page<UserReport> reports = reportService.getReportsByUser(reporter, pageable);
+            
+            // Convert to DTOs to avoid Hibernate proxy serialization issues
+            Page<ReportResponse> responsePage = reports.map(ReportResponse::new);
+            
+            // Convert Page to Map for proper JSON serialization
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", responsePage.getContent());
+            response.put("totalElements", responsePage.getTotalElements());
+            response.put("totalPages", responsePage.getTotalPages());
+            response.put("number", responsePage.getNumber());
+            response.put("size", responsePage.getSize());
+            response.put("first", responsePage.isFirst());
+            response.put("last", responsePage.isLast());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to retrieve reports", "message", e.getMessage()));
+        }
     }
     
     /**
      * Admin: Get pending reports (moderation queue)
      */
     @GetMapping("/admin/pending")
-    public ResponseEntity<Page<UserReport>> getPendingReports(Pageable pageable) {
-        Page<UserReport> reports = reportService.getPendingReports(pageable);
-        return ResponseEntity.ok(reports);
+    public ResponseEntity<?> getPendingReports(Pageable pageable) {
+        try {
+            Page<UserReport> reports = reportService.getPendingReports(pageable);
+            Page<ReportResponse> responsePage = reports.map(ReportResponse::new);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", responsePage.getContent());
+            response.put("totalElements", responsePage.getTotalElements());
+            response.put("totalPages", responsePage.getTotalPages());
+            response.put("number", responsePage.getNumber());
+            response.put("size", responsePage.getSize());
+            response.put("first", responsePage.isFirst());
+            response.put("last", responsePage.isLast());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to retrieve reports", "message", e.getMessage()));
+        }
     }
     
     /**
      * Admin: Get reports by status
      */
     @GetMapping("/admin/status/{status}")
-    public ResponseEntity<Page<UserReport>> getReportsByStatus(@PathVariable ModerationStatus status,
+    public ResponseEntity<?> getReportsByStatus(@PathVariable ModerationStatus status,
                                                                Pageable pageable) {
-        Page<UserReport> reports = reportService.getReportsByStatus(status, pageable);
-        return ResponseEntity.ok(reports);
+        try {
+            Page<UserReport> reports = reportService.getReportsByStatus(status, pageable);
+            Page<ReportResponse> responsePage = reports.map(ReportResponse::new);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", responsePage.getContent());
+            response.put("totalElements", responsePage.getTotalElements());
+            response.put("totalPages", responsePage.getTotalPages());
+            response.put("number", responsePage.getNumber());
+            response.put("size", responsePage.getSize());
+            response.put("first", responsePage.isFirst());
+            response.put("last", responsePage.isLast());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to retrieve reports", "message", e.getMessage()));
+        }
     }
     
     /**
      * Admin: Get reports for a specific product
      */
     @GetMapping("/admin/product/{productId}")
-    public ResponseEntity<List<UserReport>> getReportsForProduct(@PathVariable UUID productId) {
-        List<UserReport> reports = reportService.getReportsForProduct(productId);
-        return ResponseEntity.ok(reports);
+    public ResponseEntity<?> getReportsForProduct(@PathVariable UUID productId) {
+        try {
+            List<UserReport> reports = reportService.getReportsForProduct(productId);
+            List<ReportResponse> responseList = reports.stream()
+                .map(ReportResponse::new)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to retrieve reports", "message", e.getMessage()));
+        }
     }
     
     /**
      * Admin: Get reports for a specific user
      */
     @GetMapping("/admin/user/{userId}")
-    public ResponseEntity<List<UserReport>> getReportsForUser(@PathVariable UUID userId) {
-        List<UserReport> reports = reportService.getReportsForUser(userId);
-        return ResponseEntity.ok(reports);
+    public ResponseEntity<?> getReportsForUser(@PathVariable UUID userId) {
+        try {
+            List<UserReport> reports = reportService.getReportsForUser(userId);
+            List<ReportResponse> responseList = reports.stream()
+                .map(ReportResponse::new)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(responseList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to retrieve reports", "message", e.getMessage()));
+        }
     }
     
     /**
      * Admin: Approve report
      */
     @PostMapping("/{reportId}/approve")
-    public ResponseEntity<UserReport> approveReport(@PathVariable UUID reportId,
+    public ResponseEntity<ReportResponse> approveReport(@PathVariable UUID reportId,
                                                     @Valid @RequestBody ResolveReportRequest request,
                                                     Authentication auth) {
         User admin = getCurrentUser(auth);
         UserReport report = reportService.approveReport(reportId, admin, request.getResolutionNotes());
-        return ResponseEntity.ok(report);
+        ReportResponse response = new ReportResponse(report);
+        return ResponseEntity.ok(response);
     }
     
     /**
      * Admin: Reject report
      */
     @PostMapping("/{reportId}/reject")
-    public ResponseEntity<UserReport> rejectReport(@PathVariable UUID reportId,
+    public ResponseEntity<ReportResponse> rejectReport(@PathVariable UUID reportId,
                                                    @Valid @RequestBody ResolveReportRequest request,
                                                    Authentication auth) {
         User admin = getCurrentUser(auth);
         UserReport report = reportService.rejectReport(reportId, admin, request.getResolutionNotes());
-        return ResponseEntity.ok(report);
+        ReportResponse response = new ReportResponse(report);
+        return ResponseEntity.ok(response);
     }
     
     /**
      * Admin: Flag report for further review
      */
     @PostMapping("/{reportId}/flag")
-    public ResponseEntity<UserReport> flagReport(@PathVariable UUID reportId,
+    public ResponseEntity<ReportResponse> flagReport(@PathVariable UUID reportId,
                                                  @Valid @RequestBody ResolveReportRequest request,
                                                  Authentication auth) {
         User admin = getCurrentUser(auth);
         UserReport report = reportService.flagReport(reportId, admin, request.getResolutionNotes());
-        return ResponseEntity.ok(report);
+        ReportResponse response = new ReportResponse(report);
+        return ResponseEntity.ok(response);
     }
     
     /**
@@ -209,15 +273,18 @@ public class ReportController {
                 reports = reportService.getAllReports(pageable);
             }
             
+            // Convert to DTOs to avoid Hibernate proxy serialization issues
+            Page<ReportResponse> responsePage = reports.map(ReportResponse::new);
+            
             // Convert Page to Map for proper JSON serialization
             Map<String, Object> response = new HashMap<>();
-            response.put("content", reports.getContent());
-            response.put("totalElements", reports.getTotalElements());
-            response.put("totalPages", reports.getTotalPages());
-            response.put("number", reports.getNumber());
-            response.put("size", reports.getSize());
-            response.put("first", reports.isFirst());
-            response.put("last", reports.isLast());
+            response.put("content", responsePage.getContent());
+            response.put("totalElements", responsePage.getTotalElements());
+            response.put("totalPages", responsePage.getTotalPages());
+            response.put("number", responsePage.getNumber());
+            response.put("size", responsePage.getSize());
+            response.put("first", responsePage.isFirst());
+            response.put("last", responsePage.isLast());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -263,7 +330,8 @@ public class ReportController {
                             List.of("APPROVED", "REJECTED", "FLAGGED")));
             }
             
-            return ResponseEntity.ok(report);
+            ReportResponse response = new ReportResponse(report);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to update report", "message", e.getMessage()));
