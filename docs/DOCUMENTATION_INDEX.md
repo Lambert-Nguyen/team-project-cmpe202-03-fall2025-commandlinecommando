@@ -8,7 +8,7 @@
 ## 📚 Quick Navigation
 
 ### 🚀 Getting Started
-- **[README.md](README.md)** - Main project overview and quick start guide
+- **[README.md](../README.md)** - Main project overview and quick start guide
 - **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
 - **[API_QUICK_REFERENCE.md](API_QUICK_REFERENCE.md)** - API endpoint quick reference
 
@@ -36,33 +36,36 @@
 
 ```
 .
-├── README.md                          # Main project overview
-├── DEPLOYMENT_GUIDE.md                # Deployment instructions
-├── API_QUICK_REFERENCE.md            # API endpoint reference
-├── DOCUMENTATION_INDEX.md            # This file
+├── README.md                          # Main project overview (root)
 │
-├── REFACTORING_SUMMARY.md            # Refactoring completion summary
-├── REFACTORING_COMPARISON.md         # Before/after comparison
-├── EMAIL_COMMUNICATION_VERIFICATION.md # Email features verification
+├── docs/                              # All documentation
+│   ├── README.md                      # Documentation index
+│   ├── DOCUMENTATION_INDEX.md         # This file
+│   ├── API_QUICK_REFERENCE.md         # API endpoint reference
+│   ├── DEPLOYMENT_GUIDE.md            # Deployment instructions
+│   ├── POSTMAN_QUICK_START.md         # Postman usage guide
+│   ├── POSTMAN_TEST_VERIFICATION.md   # Postman test results
+│   ├── REFACTORING_SUMMARY.md         # Refactoring summary
+│   ├── REFACTORING_COMPARISON.md      # Before/after comparison
+│   ├── EMAIL_COMMUNICATION_VERIFICATION.md
+│   ├── postman/                       # Postman collections
+│   ├── api/                           # API documentation
+│   ├── deployment/                    # Deployment guides
+│   └── implementation/                # Implementation docs
 │
-├── POSTMAN_TEST_VERIFICATION.md       # Postman test results
-├── POSTMAN_QUICK_START.md            # Postman usage guide
+├── scripts/                           # Utility scripts
+│   ├── README.md                      # Scripts documentation
+│   ├── create-db-user.sh
+│   ├── setup-database.sh
+│   └── start-dev-db.sh
 │
 ├── backend/
-│   ├── QUICK_START_GUIDE.md          # Backend quick start
-│   └── USER_MANAGEMENT_README.md     # User management features
+│   ├── QUICK_START_GUIDE.md
+│   └── USER_MANAGEMENT_README.md
 │
-├── db/
-│   ├── docs/                         # Database documentation
-│   │   ├── TEAM_SETUP_GUIDE.md
-│   │   ├── QUICK_REFERENCE.md
-│   │   ├── TROUBLESHOOTING.md
-│   │   └── ONBOARDING_CHECKLIST.md
-│   └── migrations/                   # Flyway migration files
-│
-└── docs/                             # Additional documentation
-    ├── api/                          # API documentation
-    └── deployment/                   # Deployment guides
+└── db/
+    ├── docs/                          # Database documentation
+    └── migrations/                    # Flyway migrations
 ```
 
 ---

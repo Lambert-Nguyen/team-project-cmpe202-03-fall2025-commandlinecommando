@@ -166,14 +166,14 @@ cd backend
 
 ## Documentation
 
-📚 **See [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) for complete documentation guide**
+📚 **See [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) for complete documentation guide**
 
 ### Quick Links
-- **[🚀 Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
-- **[📋 Refactoring Summary](REFACTORING_SUMMARY.md)** - Details of the consolidation effort
-- **[📖 API Quick Reference](API_QUICK_REFERENCE.md)** - All API endpoints with examples
-- **[🧪 Postman Testing](POSTMAN_QUICK_START.md)** - Postman collection usage guide
-- **[✅ Test Results](POSTMAN_TEST_VERIFICATION.md)** - Latest test results (All passing ✅)
+- **[🚀 Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
+- **[📋 Refactoring Summary](docs/REFACTORING_SUMMARY.md)** - Details of the consolidation effort
+- **[📖 API Quick Reference](docs/API_QUICK_REFERENCE.md)** - All API endpoints with examples
+- **[🧪 Postman Testing](docs/POSTMAN_QUICK_START.md)** - Postman collection usage guide
+- **[✅ Test Results](docs/POSTMAN_TEST_VERIFICATION.md)** - Latest test results (All passing ✅)
 
 ### Database Documentation
 - **[📚 Team Setup Guide](db/docs/TEAM_SETUP_GUIDE.md)** - Comprehensive setup guide
@@ -181,6 +181,12 @@ cd backend
 - **[✅ Onboarding Checklist](db/docs/ONBOARDING_CHECKLIST.md)** - New developer checklist
 - **[🔧 Database Setup](db/docs/DATABASE_SETUP.md)** - Setup instructions
 - **[🚨 Troubleshooting](db/docs/TROUBLESHOOTING.md)** - Common issues
+
+### Scripts
+- **[📜 Scripts README](scripts/README.md)** - Utility scripts documentation
+- **create-db-user.sh** - Create PostgreSQL user
+- **setup-database.sh** - Complete database setup
+- **start-dev-db.sh** - Quick development database start
 
 ### API Endpoints
 All endpoints available at `http://localhost:8080/api`:
@@ -202,10 +208,10 @@ All endpoints available at `http://localhost:8080/api`:
 ### Running Tests
 ```bash
 # Using Newman (Postman CLI)
-npx newman run Campus_Marketplace_Complete_API_Collection.postman_collection.json
+npx newman run docs/postman/Campus_Marketplace_Complete_API_Collection.postman_collection.json
 
 # Or import collection into Postman app
-# File: Campus_Marketplace_Complete_API_Collection.postman_collection.json
+# File: docs/postman/Campus_Marketplace_Complete_API_Collection.postman_collection.json
 ```
 
 ## Troubleshooting
