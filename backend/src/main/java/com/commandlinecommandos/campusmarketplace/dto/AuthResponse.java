@@ -2,15 +2,20 @@ package com.commandlinecommandos.campusmarketplace.dto;
 
 // Removed Lombok dependencies - using manual getters/setters
 import com.commandlinecommandos.campusmarketplace.model.UserRole;
+import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Authentication response DTO.
+ * Supports many-to-many user-role relationship.
+ */
 public class AuthResponse {
 
     private String accessToken;
     private String refreshToken;
     private String tokenType = "Bearer";
     private Long expiresIn; // in seconds
-    private UserRole role;
+    private Set<UserRole> roles;
     private String username;
     private UUID userId;
     private String email;
@@ -34,12 +39,12 @@ public class AuthResponse {
     }
     
     public AuthResponse(String accessToken, String refreshToken, String tokenType, Long expiresIn, 
-                       UserRole role, String username, UUID userId) {
+                       Set<UserRole> roles, String username, UUID userId) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.tokenType = tokenType;
         this.expiresIn = expiresIn;
-        this.role = role;
+        this.roles = roles;
         this.username = username;
         this.userId = userId;
     }
@@ -77,12 +82,12 @@ public class AuthResponse {
         this.expiresIn = expiresIn;
     }
     
-    public UserRole getRole() {
-        return role;
+    public Set<UserRole> getRoles() {
+        return roles;
     }
     
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setRoles(Set<UserRole> roles) {
+        this.roles = roles;
     }
     
     public String getUsername() {

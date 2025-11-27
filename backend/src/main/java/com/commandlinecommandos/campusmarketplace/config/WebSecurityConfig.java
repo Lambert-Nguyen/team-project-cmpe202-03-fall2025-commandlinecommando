@@ -93,11 +93,11 @@ public class WebSecurityConfig {
                 // Listings endpoints (context path /api is already applied)
                 // Public read access for GET requests
                 .requestMatchers("/listings", "/listings/{id}", "/listings/seller/{sellerId}").permitAll()
-                // Protected write operations require authentication
-                .requestMatchers("/listings/**").hasAnyRole("STUDENT", "ADMIN")
+                // Protected write operations require SELLER role (students have both BUYER and SELLER by default)
+                .requestMatchers("/listings/**").hasAnyRole("SELLER", "ADMIN")
 
-                // Student and Admin endpoints
-                .requestMatchers("/user/**").hasAnyRole("STUDENT", "ADMIN")
+                // User endpoints - BUYER and SELLER can access user features
+                .requestMatchers("/user/**").hasAnyRole("BUYER", "SELLER", "ADMIN")
 
                 .requestMatchers("/actuator/prometheus").permitAll()
                 .requestMatchers("/actuator/metrics").permitAll()

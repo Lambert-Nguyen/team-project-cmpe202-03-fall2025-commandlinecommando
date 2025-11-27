@@ -7,14 +7,18 @@ import jakarta.validation.constraints.Pattern;
 
 /**
  * DTO for student self-registration.
+ * Implements BaseUserFields interface for common user profile fields.
  * 
- * Students registering through the public /auth/register endpoint 
- * automatically receive both BUYER and SELLER roles (many-to-many).
+ * Students automatically receive both BUYER and SELLER roles upon registration.
+ * They can later modify their roles in profile settings to be:
+ * - BUYER only
+ * - SELLER only  
+ * - Both BUYER and SELLER (default)
  * 
- * Admin accounts can only be created by existing admins through
- * the protected /admin/users/admin endpoint.
+ * Note: This DTO does NOT include a role field - roles are auto-assigned.
+ * Admin accounts cannot be created through this registration flow.
  */
-public class RegisterRequest implements BaseUserFields {
+public class StudentRegisterRequest implements BaseUserFields {
     
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -39,36 +43,56 @@ public class RegisterRequest implements BaseUserFields {
     private String phone;
     
     // Student-specific fields
+    @NotBlank(message = "Student ID is required for registration")
     private String studentId;
+    
     private String major;
     private Integer graduationYear;
     private String campusLocation;
     
     // Constructors
-    public RegisterRequest() {
+    public StudentRegisterRequest() {
     }
     
-    public RegisterRequest(String username, String email, String password, String firstName, String lastName) {
+    public StudentRegisterRequest(String username, String email, String password, 
+                                   String firstName, String lastName, String studentId) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.studentId = studentId;
     }
     
-    // Getters and Setters
+    // BaseUserFields interface implementation
     @Override
     public String getUsername() {
         return username;
     }
     
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
     @Override
     public String getEmail() {
         return email;
+    }
+    
+    @Override
+    public String getFirstName() {
+        return firstName;
+    }
+    
+    @Override
+    public String getLastName() {
+        return lastName;
+    }
+    
+    @Override
+    public String getPhone() {
+        return phone;
+    }
+    
+    // Setters
+    public void setUsername(String username) {
+        this.username = username;
     }
     
     public void setEmail(String email) {
@@ -83,27 +107,12 @@ public class RegisterRequest implements BaseUserFields {
         this.password = password;
     }
     
-    @Override
-    public String getFirstName() {
-        return firstName;
-    }
-    
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
     
-    @Override
-    public String getLastName() {
-        return lastName;
-    }
-    
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-    
-    @Override
-    public String getPhone() {
-        return phone;
     }
     
     public void setPhone(String phone) {

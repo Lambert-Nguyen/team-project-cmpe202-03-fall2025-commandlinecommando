@@ -69,15 +69,15 @@ public class AdminAnalyticsController {
                 .count();
             overview.put("suspendedUsers", suspendedUsersCount);
             
-            // Students count - handle enum mismatch by counting manually
+            // Students count - count users who have BUYER or SELLER role (students have both)
             long studentsCount = userRepository.findAll().stream()
-                .filter(u -> u.getRole() == UserRole.STUDENT)
+                .filter(u -> u.hasRole(UserRole.BUYER) || u.hasRole(UserRole.SELLER))
                 .count();
             overview.put("studentsCount", studentsCount);
             
-            // Admins count - handle enum mismatch by counting manually
+            // Admins count - count users who have ADMIN role
             long adminsCount = userRepository.findAll().stream()
-                .filter(u -> u.getRole() == UserRole.ADMIN)
+                .filter(u -> u.hasRole(UserRole.ADMIN))
                 .count();
             overview.put("adminsCount", adminsCount);
             
@@ -115,10 +115,14 @@ public class AdminAnalyticsController {
             // Total users
             stats.put("totalUsers", userRepository.count());
             
-            // Users by role
+            // Users by role (many-to-many: users can have multiple roles)
             Map<String, Long> usersByRole = new HashMap<>();
-            usersByRole.put("STUDENT", userRepository.countByRole(UserRole.STUDENT));
-            usersByRole.put("ADMIN", userRepository.countByRole(UserRole.ADMIN));
+            usersByRole.put("BUYER", userRepository.findAll().stream()
+                .filter(u -> u.hasRole(UserRole.BUYER)).count());
+            usersByRole.put("SELLER", userRepository.findAll().stream()
+                .filter(u -> u.hasRole(UserRole.SELLER)).count());
+            usersByRole.put("ADMIN", userRepository.findAll().stream()
+                .filter(u -> u.hasRole(UserRole.ADMIN)).count());
             stats.put("usersByRole", usersByRole);
             
             // Users by verification status

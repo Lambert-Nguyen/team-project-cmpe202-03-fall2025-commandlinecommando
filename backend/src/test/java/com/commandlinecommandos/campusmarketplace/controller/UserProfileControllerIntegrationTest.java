@@ -21,6 +21,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,7 +69,7 @@ class UserProfileControllerIntegrationTest {
         testUser.setPassword(passwordEncoder.encode("Password123!"));
         testUser.setFirstName("Test");
         testUser.setLastName("User");
-        testUser.setRole(UserRole.STUDENT);
+        testUser.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         testUser.setUniversity(testUniversity);
         testUser.setActive(true);
         testUser = userRepository.save(testUser);

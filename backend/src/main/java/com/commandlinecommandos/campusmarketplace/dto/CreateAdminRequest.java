@@ -6,15 +6,12 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
 /**
- * DTO for student self-registration.
+ * DTO for creating admin accounts.
  * 
- * Students registering through the public /auth/register endpoint 
- * automatically receive both BUYER and SELLER roles (many-to-many).
- * 
- * Admin accounts can only be created by existing admins through
- * the protected /admin/users/admin endpoint.
+ * Admin accounts can ONLY be created by existing admins.
+ * Admins have exclusive ADMIN role and cannot have BUYER or SELLER roles.
  */
-public class RegisterRequest implements BaseUserFields {
+public class CreateAdminRequest implements BaseUserFields {
     
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -38,22 +35,12 @@ public class RegisterRequest implements BaseUserFields {
     
     private String phone;
     
-    // Student-specific fields
-    private String studentId;
-    private String major;
-    private Integer graduationYear;
-    private String campusLocation;
+    // Admin-specific fields
+    private String adminLevel;  // e.g., "super_admin", "moderator", etc.
+    private String department;  // e.g., "IT", "Customer Service", etc.
     
     // Constructors
-    public RegisterRequest() {
-    }
-    
-    public RegisterRequest(String username, String email, String password, String firstName, String lastName) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public CreateAdminRequest() {
     }
     
     // Getters and Setters
@@ -110,35 +97,19 @@ public class RegisterRequest implements BaseUserFields {
         this.phone = phone;
     }
     
-    public String getStudentId() {
-        return studentId;
+    public String getAdminLevel() {
+        return adminLevel;
     }
     
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
+    public void setAdminLevel(String adminLevel) {
+        this.adminLevel = adminLevel;
     }
     
-    public String getMajor() {
-        return major;
+    public String getDepartment() {
+        return department;
     }
     
-    public void setMajor(String major) {
-        this.major = major;
-    }
-    
-    public Integer getGraduationYear() {
-        return graduationYear;
-    }
-    
-    public void setGraduationYear(Integer graduationYear) {
-        this.graduationYear = graduationYear;
-    }
-    
-    public String getCampusLocation() {
-        return campusLocation;
-    }
-    
-    public void setCampusLocation(String campusLocation) {
-        this.campusLocation = campusLocation;
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

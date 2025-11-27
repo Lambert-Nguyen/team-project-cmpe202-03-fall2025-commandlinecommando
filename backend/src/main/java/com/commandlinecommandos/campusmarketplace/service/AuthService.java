@@ -29,12 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -242,6 +243,11 @@ public class AuthService {
         refreshTokenRepository.deleteExpiredTokens();
     }
     
+    /**
+     * Register a new student user.
+     * Students automatically receive both BUYER and SELLER roles.
+     * Admin accounts cannot be created through this endpoint.
+     */
     public AuthResponse register(RegisterRequest registerRequest) {
         // Check if username already exists
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
@@ -261,12 +267,15 @@ public class AuthService {
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
         user.setPhone(registerRequest.getPhone());
-        user.setRole(registerRequest.getRole());
         
-        // Set student-specific fields if available
-        if (registerRequest.getStudentId() != null) {
-            user.setStudentId(registerRequest.getStudentId());
-        }
+        // Auto-assign both BUYER and SELLER roles to new students
+        Set<UserRole> studentRoles = new HashSet<>();
+        studentRoles.add(UserRole.BUYER);
+        studentRoles.add(UserRole.SELLER);
+        user.setRoles(studentRoles);
+        
+        // Set student-specific fields
+        user.setStudentId(registerRequest.getStudentId());
         if (registerRequest.getMajor() != null) {
             user.setMajor(registerRequest.getMajor());
         }
@@ -280,6 +289,10 @@ public class AuthService {
         
         // Save user to database
         user = userRepository.save(user);
+        
+        logger.info("New student registered: {} with roles: {}", 
+            registerRequest.getUsername(), 
+            user.getRoles().stream().map(UserRole::name).collect(Collectors.joining(", ")));
         
         // Generate tokens
         String accessToken = jwtUtil.generateAccessToken(user);
@@ -409,7 +422,7 @@ public class AuthService {
             .lastName(user.getLastName())
             .phone(user.getPhone())
             .avatarUrl(user.getAvatarUrl())
-            .role(user.getRole())
+            .roles(user.getRoles())
             .verificationStatus(user.getVerificationStatus())
             .isActive(user.isActive())
             .lastLoginAt(user.getLastLoginAt())
@@ -437,7 +450,7 @@ public class AuthService {
         response.setExpiresIn(jwtUtil.getAccessTokenExpiration());
 
         // Basic user info
-        response.setRole(user.getRole());
+        response.setRoles(user.getRoles());
         response.setUsername(user.getUsername());
         response.setUserId(user.getUserId());
         response.setEmail(user.getEmail());

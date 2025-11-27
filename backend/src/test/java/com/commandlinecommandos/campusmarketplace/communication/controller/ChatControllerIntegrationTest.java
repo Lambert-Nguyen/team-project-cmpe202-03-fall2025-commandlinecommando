@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -97,7 +98,7 @@ public class ChatControllerIntegrationTest {
         seller.setPassword(passwordEncoder.encode("password123"));
         seller.setFirstName("Seller");
         seller.setLastName("User");
-        seller.setRole(UserRole.STUDENT);
+        seller.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         seller.setUniversity(testUniversity);
         seller.setEmailVerifiedAt(java.time.LocalDateTime.now());
         seller.setActive(true);
@@ -110,7 +111,7 @@ public class ChatControllerIntegrationTest {
         buyer.setPassword(passwordEncoder.encode("password123"));
         buyer.setFirstName("Buyer");
         buyer.setLastName("User");
-        buyer.setRole(UserRole.STUDENT);
+        buyer.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         buyer.setUniversity(testUniversity);
         buyer.setEmailVerifiedAt(java.time.LocalDateTime.now());
         buyer.setActive(true);
@@ -215,7 +216,7 @@ public class ChatControllerIntegrationTest {
         outsider.setUsername("outsider");
         outsider.setEmail("outsider@test.edu");
         outsider.setPassword(passwordEncoder.encode("password123"));
-        outsider.setRole(UserRole.STUDENT);
+        outsider.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         outsider.setUniversity(testUniversity);
         outsider.setEmailVerifiedAt(java.time.LocalDateTime.now());
         outsider.setActive(true);

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -83,7 +84,7 @@ public class ListingControllerIntegrationTest {
         testUser.setPassword(passwordEncoder.encode("password123"));
         testUser.setFirstName("Test");
         testUser.setLastName("User");
-        testUser.setRole(UserRole.STUDENT);
+        testUser.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         testUser.setUniversity(testUniversity);
         testUser.setEmailVerifiedAt(java.time.LocalDateTime.now());
         testUser.setActive(true);
@@ -203,7 +204,7 @@ public class ListingControllerIntegrationTest {
         anotherUser.setUsername("anotheruser");
         anotherUser.setEmail("another@test.edu");
         anotherUser.setPassword(passwordEncoder.encode("password123"));
-        anotherUser.setRole(UserRole.STUDENT);
+        anotherUser.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
         anotherUser.setUniversity(testUniversity);
         anotherUser.setEmailVerifiedAt(java.time.LocalDateTime.now());
         anotherUser.setActive(true);

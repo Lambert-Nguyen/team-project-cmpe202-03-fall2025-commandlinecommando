@@ -63,10 +63,10 @@ public class AuthController {
     
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        logger.info("Registration attempt for username: {} with role: {}", registerRequest.getUsername(), registerRequest.getRole());
+        logger.info("Registration attempt for username: {}", registerRequest.getUsername());
         try {
             AuthResponse authResponse = authService.register(registerRequest);
-            logger.info("Successful registration for username: {} with role: {}", registerRequest.getUsername(), registerRequest.getRole());
+            logger.info("Successful registration for username: {} with roles: BUYER, SELLER", registerRequest.getUsername());
             return ResponseEntity.ok(authResponse);
         } catch (BadCredentialsException e) {
             logger.warn("Registration failed for username: {} - {}", registerRequest.getUsername(), e.getMessage());
