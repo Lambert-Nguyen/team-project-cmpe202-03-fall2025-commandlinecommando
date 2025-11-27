@@ -547,9 +547,9 @@ public class UserManagementService {
                 predicates.add(searchPredicate);
             }
             
-            // Role filter
+            // Role filter (uses join on roles collection)
             if (request.getRole() != null) {
-                predicates.add(cb.equal(root.get("role"), request.getRole()));
+                predicates.add(cb.isMember(request.getRole(), root.get("roles")));
             }
             
             // Verification status filter

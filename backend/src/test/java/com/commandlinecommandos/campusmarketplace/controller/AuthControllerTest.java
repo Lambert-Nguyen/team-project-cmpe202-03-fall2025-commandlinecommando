@@ -170,7 +170,7 @@ class AuthControllerTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @WithMockUser(username = "testuser", roles = {"BUYER"})
     void testLogoutAllDevices() throws Exception {
         // Given
         doNothing().when(authService).logoutAllDevices(anyString());
@@ -195,7 +195,7 @@ class AuthControllerTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @WithMockUser(username = "testuser", roles = {"BUYER"})
     void testGetCurrentUser() throws Exception {
         // When & Then
         mockMvc.perform(get("/auth/me"))
@@ -211,7 +211,7 @@ class AuthControllerTest {
     }
     
     @Test
-    @WithMockUser(username = "testuser", roles = {"STUDENT"})
+    @WithMockUser(username = "testuser", roles = {"BUYER"})
     void testValidateToken() throws Exception {
         // When & Then
         mockMvc.perform(get("/auth/validate"))

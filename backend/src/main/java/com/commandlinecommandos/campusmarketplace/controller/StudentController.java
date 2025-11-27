@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * REST Controller for Student-specific dashboard and operations
+ * REST Controller for User-specific dashboard and operations
+ * Accessible by BUYER and SELLER roles (previously STUDENT)
  * Note: Listing management has been moved to ListingController at /api/listings
  */
 @RestController
@@ -18,10 +19,10 @@ import java.util.Map;
 public class StudentController {
 
     /**
-     * Get student dashboard with stats and quick info
+     * Get user dashboard with stats and quick info
      */
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('BUYER', 'SELLER')")
     public ResponseEntity<?> getStudentDashboard(Authentication authentication) {
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("message", "Welcome to Student Dashboard");
@@ -37,10 +38,10 @@ public class StudentController {
     }
 
     /**
-     * Get student profile information
+     * Get user profile information
      */
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('BUYER', 'SELLER')")
     public ResponseEntity<?> getStudentProfile(Authentication authentication) {
         Map<String, Object> profile = new HashMap<>();
         profile.put("userId", authentication.getName());
@@ -49,11 +50,11 @@ public class StudentController {
     }
 
     /**
-     * Get student listings
+     * Get user listings
      * Note: This is a test endpoint. Real listing management is at /api/listings
      */
     @GetMapping("/listings")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('BUYER', 'SELLER')")
     public ResponseEntity<?> getStudentListings(Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Student listings endpoint");
@@ -62,11 +63,11 @@ public class StudentController {
     }
 
     /**
-     * Create student listing
+     * Create user listing
      * Note: This is a test endpoint. Real listing creation is at /api/listings
      */
     @PostMapping("/listings")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('BUYER', 'SELLER')")
     public ResponseEntity<?> createStudentListing(Authentication authentication, @RequestBody Map<String, Object> listing) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Listing created successfully");

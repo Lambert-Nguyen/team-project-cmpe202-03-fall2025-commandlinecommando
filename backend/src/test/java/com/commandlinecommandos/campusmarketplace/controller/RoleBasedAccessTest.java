@@ -28,8 +28,8 @@ class RoleBasedAccessTest {
     }
     
     @Test
-    @WithMockUser(username = "student", roles = {"STUDENT"})
-    void testStudentCannotAccessAdminDashboard() throws Exception {
+    @WithMockUser(username = "buyer", roles = {"BUYER"})
+    void testBuyerCannotAccessAdminDashboard() throws Exception {
         mockMvc.perform(get("/admin/dashboard"))
                 .andExpect(status().isForbidden());
     }
@@ -51,8 +51,8 @@ class RoleBasedAccessTest {
     }
     
     @Test
-    @WithMockUser(username = "student", roles = {"STUDENT"})
-    void testStudentCannotAccessUsersList() throws Exception {
+    @WithMockUser(username = "seller", roles = {"SELLER"})
+    void testSellerCannotAccessUsersList() throws Exception {
         mockMvc.perform(get("/admin/users"))
                 .andExpect(status().isForbidden());
     }
@@ -70,8 +70,8 @@ class RoleBasedAccessTest {
     }
     
     @Test
-    @WithMockUser(username = "student", roles = {"STUDENT"})
-    void testStudentCannotModerateListing() throws Exception {
+    @WithMockUser(username = "buyer", roles = {"BUYER"})
+    void testBuyerCannotModerateListing() throws Exception {
         mockMvc.perform(post("/admin/moderate/123")
                 .param("action", "approve"))
                 .andExpect(status().isForbidden());
@@ -89,17 +89,17 @@ class RoleBasedAccessTest {
     }
     
     @Test
-    @WithMockUser(username = "student", roles = {"STUDENT"})
-    void testStudentCannotDeleteUser() throws Exception {
+    @WithMockUser(username = "seller", roles = {"SELLER"})
+    void testSellerCannotDeleteUser() throws Exception {
         mockMvc.perform(delete("/admin/users/123"))
                 .andExpect(status().isForbidden());
     }
     
-    // Student Endpoint Tests
+    // Buyer/Seller Endpoint Tests (previously Student)
     
     @Test
-    @WithMockUser(username = "student", roles = {"STUDENT"})
-    void testStudentCanAccessStudentDashboard() throws Exception {
+    @WithMockUser(username = "buyer", roles = {"BUYER"})
+    void testBuyerCanAccessUserDashboard() throws Exception {
         mockMvc.perform(get("/student/dashboard"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Welcome to Student Dashboard"));
@@ -107,13 +107,13 @@ class RoleBasedAccessTest {
     
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminCannotAccessStudentDashboard() throws Exception {
+    void testAdminCannotAccessUserDashboard() throws Exception {
         mockMvc.perform(get("/student/dashboard"))
                 .andExpect(status().isForbidden());
     }
     
     @Test
-    void testUnauthenticatedUserCannotAccessStudentDashboard() throws Exception {
+    void testUnauthenticatedUserCannotAccessUserDashboard() throws Exception {
         mockMvc.perform(get("/student/dashboard"))
                 .andExpect(status().isUnauthorized());
     }
@@ -131,16 +131,16 @@ class RoleBasedAccessTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminCanAccessStudentListings() throws Exception {
-        // Admin should NOT be able to access student-only endpoints (STUDENT role required)
+    void testAdminCanAccessUserListings() throws Exception {
+        // Admin should NOT be able to access buyer/seller-only endpoints
         mockMvc.perform(get("/student/listings"))
                 .andExpect(status().isForbidden());
     }
 
     // Commented out - requires real User object in authentication context
     // @Test
-    // @WithMockUser(username = "student", roles = {"STUDENT"})
-    // void testStudentCanCreateListing() throws Exception {
+    // @WithMockUser(username = "seller", roles = {"SELLER"})
+    // void testSellerCanCreateListing() throws Exception {
     //     String listingJson = "{\"title\":\"Test Listing\",\"description\":\"Test Description\",\"price\":100,\"category\":\"ELECTRONICS\",\"condition\":\"NEW\"}";
     //
     //     mockMvc.perform(post("/student/listings")
@@ -154,10 +154,10 @@ class RoleBasedAccessTest {
     
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminCannotCreateStudentListing() throws Exception {
+    void testAdminCannotCreateUserListing() throws Exception {
         String listingJson = "{\"title\":\"Test Listing\",\"description\":\"Test Description\",\"price\":100}";
         
-        // Admin should NOT be able to create student listings (STUDENT role required)
+        // Admin should NOT be able to create user listings (BUYER/SELLER role required)
         mockMvc.perform(post("/student/listings")
                 .contentType("application/json")
                 .content(listingJson))
