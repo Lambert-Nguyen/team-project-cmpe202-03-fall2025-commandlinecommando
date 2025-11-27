@@ -1,0 +1,30 @@
+# Maven build artifacts
+target/
+!target/ai-integration-server-*.jar
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+
+# Documentation
+README.md
+*.md
+!pom.xml
+
+# Git
+.git/
+.gitignore
