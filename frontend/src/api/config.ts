@@ -1,9 +1,8 @@
 export const API_CONFIG = {
-  USE_MOCK_API: true,
+  USE_MOCK_API: false,  // Disable mock API to use real backend
   
-  BACKEND_URL: import.meta.env.VITE_API_BASE_URL || 'http://54.193.178.118:8080/api',
-  LISTING_API_URL: import.meta.env.VITE_LISTING_API_URL || 'http://54.193.178.118:8100/api',
-  COMMUNICATION_URL: import.meta.env.VITE_COMMUNICATION_URL || 'http://54.193.178.118:8200/api',
+  BACKEND_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  // LISTING_API_URL and COMMUNICATION_URL removed - using unified backend
   
   TIMEOUT: 5000,
 };
