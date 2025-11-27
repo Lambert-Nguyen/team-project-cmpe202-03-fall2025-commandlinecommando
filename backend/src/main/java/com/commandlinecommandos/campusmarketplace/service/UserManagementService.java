@@ -488,7 +488,7 @@ public class UserManagementService {
                     case UPDATE_ROLE:
                         if (request.getNewRole() != null) {
                             Set<UserRole> oldRoles = user.getRoles();
-                            user.setRoles(Set.of(request.getNewRole()));
+                            user.setRoles(new HashSet<>(Set.of(request.getNewRole())));
                             userRepository.save(user);
                             auditService.logRoleChange(user, admin, oldRoles.toString(), request.getNewRole().name());
                         }

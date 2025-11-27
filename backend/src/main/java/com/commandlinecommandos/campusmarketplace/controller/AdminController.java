@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -152,7 +153,8 @@ public class AdminController {
             admin.setPhone(request.getPhone());
             
             // Admin gets exclusive ADMIN role (cannot be BUYER or SELLER)
-            admin.setRoles(Set.of(UserRole.ADMIN));
+            // Use mutable HashSet for JPA @ElementCollection compatibility
+            admin.setRoles(new HashSet<>(Set.of(UserRole.ADMIN)));
             admin.setActive(true);
             
             // Store admin-specific info in preferences

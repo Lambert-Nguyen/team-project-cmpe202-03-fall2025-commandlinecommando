@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -57,7 +58,7 @@ public class DataInitializationService implements CommandLineRunner {
                 user.setFirstName("Test");
                 user.setLastName("Student");
                 // Students get both BUYER and SELLER roles (many-to-many)
-                user.setRoles(Set.of(UserRole.BUYER, UserRole.SELLER));
+                user.setRoles(new HashSet<>(Set.of(UserRole.BUYER, UserRole.SELLER)));
                 user.setActive(true);
                 // University can be null for H2
                 return userRepository.save(user);
