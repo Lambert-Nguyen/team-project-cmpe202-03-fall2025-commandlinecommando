@@ -94,10 +94,12 @@ export async function getFavorites() {
 }
 
 export async function reportListing(id: string, data: { reportType: string; description: string }) {
+  // reportType from frontend is actually the "reason" (SPAM, INAPPROPRIATE, etc.)
+  // Backend expects: reportType=PRODUCT and reason=SPAM/INAPPROPRIATE/etc.
   const res = await api.post('/reports', {
     targetId: id,
-    reportType: data.reportType || 'PRODUCT',
-    reason: 'INAPPROPRIATE_CONTENT',
+    reportType: 'PRODUCT',  // Always PRODUCT when reporting a listing
+    reason: data.reportType || 'OTHER',  // Frontend's reportType is actually the reason
     description: data.description
   })
   return res.data
