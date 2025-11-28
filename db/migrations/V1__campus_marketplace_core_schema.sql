@@ -201,12 +201,10 @@ CREATE TABLE products (
     published_at TIMESTAMP,
     expires_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     
-    -- Ensure university isolation
-    CONSTRAINT fk_seller_university CHECK (
-        (SELECT university_id FROM users WHERE user_id = seller_id) = university_id
-    )
+    -- Note: University isolation is enforced at the application level
+    -- PostgreSQL doesn't support subqueries in CHECK constraints
 );
 
 -- Product images table
