@@ -324,6 +324,13 @@ export const userApi = {
     }
     return realUser.changePassword(currentPassword, newPassword);
   },
+
+  async getMyReports() {
+    if (API_CONFIG.USE_MOCK_API) {
+      return mockUserApi.getMyReports();
+    }
+    return realUser.getMyReports();
+  },
 };
 
 export { API_CONFIG, isUsingMockApi, toggleMockApi } from './config';

@@ -626,6 +626,16 @@ export const mockUserApi = {
     await delay(400);
     return { message: 'Password changed successfully' };
   },
+
+  async getMyReports() {
+    await delay(300);
+    if (!currentUser) {
+      throw { response: { status: 401, data: { message: 'Not authenticated' } } };
+    }
+    // Filter reports submitted by the current user
+    const myReports = reports.filter(r => r.reporterId === currentUser?.userId);
+    return { content: myReports, totalElements: myReports.length, totalPages: 1 };
+  },
 };
 
 export function setMockCurrentUser(user: any) {

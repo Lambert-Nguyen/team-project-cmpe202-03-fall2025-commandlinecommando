@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
-import { adminApi } from '../api';
+import { adminApi, userApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 
 interface Report {
@@ -91,12 +91,19 @@ export function ReportListingPage() {
 
   useEffect(() => {
     loadReports();
-  }, []);
+  }, [isAdmin]);
 
   async function loadReports() {
     try {
       setLoading(true);
-      const data = await adminApi.getReports();
+      let data;
+      if (isAdmin) {
+        // Admin sees all reports
+        data = await adminApi.getReports();
+      } else {
+        // Regular users see only their own submitted reports
+        data = await userApi.getMyReports();
+      }
       // Backend returns { content: [], ... } for paginated responses
       setReports(data.content || data.reports || []);
     } catch (err) {
@@ -144,9 +151,9 @@ export function ReportListingPage() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold gradient-text">CampusConnect</h1>
-              <p className="text-sm text-muted">Report Management</p>
+              <p className="text-sm text-muted">{isAdmin ? 'Report Management' : 'My Reports'}</p>
             </div>
-            <h1 className="sm:hidden text-lg font-bold gradient-text">Reports</h1>
+            <h1 className="sm:hidden text-lg font-bold gradient-text">{isAdmin ? 'Reports' : 'My Reports'}</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
@@ -455,30 +462,41 @@ export function ReportListingPage() {
               )}
               
               <div className="flex gap-3 pt-4 border-t border-white/10 dark:border-white/5">
-                <button
-                  onClick={() => {
-                    handleUpdateReport(selectedReport.reportId, 'RESOLVED');
-                    setSelectedReport(null);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Approve Listing
-                </button>
-                <button
-                  onClick={() => {
-                    handleUpdateReport(selectedReport.reportId, 'DISMISSED');
-                    setSelectedReport(null);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Reject Listing
-                </button>
+                {isAdmin ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleUpdateReport(selectedReport.reportId, 'RESOLVED');
+                        setSelectedReport(null);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Approve Listing
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleUpdateReport(selectedReport.reportId, 'DISMISSED');
+                        setSelectedReport(null);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Reject Listing
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setSelectedReport(null)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-600 hover:bg-slate-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    Close
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -32,3 +32,12 @@ export async function changePassword(currentPassword: string, newPassword: strin
   })
   return res.data
 }
+
+/**
+ * Get the current user's submitted reports
+ * Uses GET /reports/my-reports endpoint
+ */
+export async function getMyReports() {
+  const res = await api.get('/reports/my-reports')
+  return res.data
+}
