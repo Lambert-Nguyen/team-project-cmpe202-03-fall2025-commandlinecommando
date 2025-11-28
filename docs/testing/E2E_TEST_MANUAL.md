@@ -35,10 +35,13 @@ This manual provides comprehensive end-to-end testing procedures for the Campus 
 
 | Username | Password | Roles | Description |
 |----------|----------|-------|-------------|
-| `student` | `password123` | BUYER, SELLER | Standard student account |
-| `admin` | `admin123` | ADMIN | Administrator account |
-| `alice_chen` | `password123` | BUYER, SELLER | Test seller account |
-| `bob_martinez` | `password123` | BUYER, SELLER | Test buyer account |
+| `alice_buyer` | `password123` | BUYER, SELLER | Standard student account |
+| `bob_buyer` | `password123` | BUYER, SELLER | Standard student account |
+| `carol_seller` | `password123` | BUYER, SELLER | Test seller account |
+| `david_techseller` | `password123` | BUYER, SELLER | Test seller account |
+| `sjsu_admin` | `password123` | ADMIN | Administrator account |
+| `test_buyer` | `password123` | BUYER, SELLER | Test buyer account |
+| `test_admin` | `password123` | ADMIN | Test admin account |
 
 ---
 
@@ -160,7 +163,7 @@ curl -X POST http://localhost:8080/api/auth/register \
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "student",
+    "username": "alice_buyer",
     "password": "password123"
   }'
 ```
@@ -173,7 +176,7 @@ curl -X POST http://localhost:8080/api/auth/login \
   "tokenType": "Bearer",
   "expiresIn": 3600,
   "roles": ["BUYER", "SELLER"],
-  "username": "student",
+  "username": "alice_buyer",
   "userId": "<uuid>",
   "email": "student@sjsu.edu",
   "firstName": "John",
@@ -197,8 +200,8 @@ curl -X POST http://localhost:8080/api/auth/login \
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "admin",
-    "password": "admin123"
+    "username": "sjsu_admin",
+    "password": "password123"
   }'
 ```
 
@@ -207,7 +210,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 {
   "accessToken": "<jwt-token>",
   "roles": ["ADMIN"],
-  "username": "admin"
+  "username": "sjsu_admin"
 }
 ```
 
@@ -227,7 +230,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 # First login to get token
 TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "student", "password": "password123"}' \
+  -d '{"username": "alice_buyer", "password": "password123"}' \
   | jq -r '.accessToken')
 
 # Get current user
@@ -326,7 +329,7 @@ echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq .
 # Login as student
 TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "student", "password": "password123"}' \
+  -d '{"username": "alice_buyer", "password": "password123"}' \
   | jq -r '.accessToken')
 
 # Try admin endpoint
@@ -347,7 +350,7 @@ curl -X GET http://localhost:8080/api/admin/dashboard \
 # Login as admin
 ADMIN_TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}' \
+  -d '{"username": "sjsu_admin", "password": "password123"}' \
   | jq -r '.accessToken')
 
 # Access admin dashboard
