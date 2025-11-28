@@ -68,26 +68,28 @@ WHERE role = 'ADMIN'
 ON CONFLICT (user_id, role) DO NOTHING;
 
 -- =============================================================================
--- STEP 3: Drop the old role column from users table
+-- STEP 3: Drop views that depend on the role column FIRST
 -- =============================================================================
 
--- First, drop the check constraint that references the role column
+-- Must drop views BEFORE dropping the role column they depend on
+DROP VIEW IF EXISTS vw_seller_dashboard CASCADE;
+DROP VIEW IF EXISTS vw_admin_analytics CASCADE;
+DROP VIEW IF EXISTS vw_users_with_roles CASCADE;
+DROP VIEW IF EXISTS vw_active_products CASCADE;
+DROP VIEW IF EXISTS vw_active_listings CASCADE;
+
+-- =============================================================================
+-- STEP 4: Drop the old role column from users table
+-- =============================================================================
+
+-- Drop the check constraint that references the role column
 ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_student_id;
 
 -- Drop the index on the role column
 DROP INDEX IF EXISTS idx_users_role;
 
--- Drop the role column from users table
-ALTER TABLE users DROP COLUMN IF EXISTS role;
-
--- =============================================================================
--- STEP 4: Update views that reference the old role column
--- =============================================================================
-
--- Drop existing views that use the role column (if they exist)
-DROP VIEW IF EXISTS vw_seller_dashboard;
-DROP VIEW IF EXISTS vw_admin_analytics;
-DROP VIEW IF EXISTS vw_users_with_roles;
+-- Drop the role column from users table (CASCADE to handle any remaining dependencies)
+ALTER TABLE users DROP COLUMN IF EXISTS role CASCADE;
 
 -- Create view to easily get all users with their roles as an array
 CREATE VIEW vw_users_with_roles AS
