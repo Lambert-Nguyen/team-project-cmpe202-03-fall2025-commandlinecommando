@@ -53,12 +53,13 @@ public class StudentController {
      * Get user listings
      * Note: This is a test endpoint. Real listing management is at /api/listings
      */
-    @GetMapping("/listings")
+    @GetMapping({"/listings", "/my-listings"})
     @PreAuthorize("hasAnyRole('BUYER', 'SELLER')")
     public ResponseEntity<?> getStudentListings(Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Student listings endpoint");
         response.put("username", authentication.getName());
+        response.put("listings", java.util.Collections.emptyList()); // Return empty list for now
         return ResponseEntity.ok(response);
     }
 
