@@ -15,6 +15,14 @@ A secure and scalable marketplace platform for university students to buy and se
 
 ---
 
+# Component Ownership
+- Lam: User Management System (backend), Search Integration, Authentication
+- Vineet: AWS Deployment, Infrastructure, ChatGPT Search Feature
+- Wilson: Listing API, DB Integration, File Upload Service
+- Sakshat: Frontend UI (Login, Listings, Management), E2E UI Integration
+
+---
+
 ## Quick Start
 
 ### Option 1: Docker Compose (Recommended)
