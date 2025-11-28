@@ -1,23 +1,24 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@assets': path.resolve(__dirname, '../attached_assets'),
-    },
-  },
   server: {
-    port: 5000,
-    host: '0.0.0.0',
-    allowedHosts: true,
+    port: 5173,
     proxy: {
+      // Main backend API - unified architecture
       '/api': {
-        target: 'http://localhost:8080',  // Unified backend on port 8080
+        target: 'http://localhost:8080',
         changeOrigin: true,
+        secure: false,
+      },
+      // AI integration service (optional)
+      '/ai': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/ai/, ''),
       },
     },
-  }
+  },
 })
