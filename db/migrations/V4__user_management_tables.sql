@@ -29,25 +29,46 @@ CREATE INDEX IF NOT EXISTS idx_verification_expires ON verification_tokens(expir
 CREATE INDEX IF NOT EXISTS idx_verification_type ON verification_tokens(token_type);
 
 -- =============================================================================
--- AUDIT LOGS TABLE
+-- AUDIT LOGS TABLE - ENHANCEMENTS
 -- =============================================================================
--- Comprehensive audit logging for all user actions and admin operations
+-- Add missing columns to existing audit_logs table from V1
 
-CREATE TABLE IF NOT EXISTS audit_logs (
-    audit_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
-    username VARCHAR(50),  -- Store username for reference even if user is deleted
-    table_name VARCHAR(100) NOT NULL,
-    record_id UUID,
-    action VARCHAR(50) NOT NULL,
-    old_values JSONB,
-    new_values JSONB,
-    description VARCHAR(500),
-    ip_address VARCHAR(45),  -- Support IPv6
-    user_agent VARCHAR(500),
-    severity VARCHAR(20) DEFAULT 'INFO' CHECK (severity IN ('INFO', 'WARNING', 'ERROR', 'CRITICAL')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
+-- Add/modify columns for audit_logs table
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_logs' AND column_name = 'username'
+    ) THEN
+        ALTER TABLE audit_logs ADD COLUMN username VARCHAR(50);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_logs' AND column_name = 'description'
+    ) THEN
+        ALTER TABLE audit_logs ADD COLUMN description VARCHAR(500);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_logs' AND column_name = 'severity'
+    ) THEN
+        ALTER TABLE audit_logs ADD COLUMN severity VARCHAR(20) DEFAULT 'INFO';
+        -- Add check constraint separately
+        ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_severity_check CHECK (severity IN ('INFO', 'WARNING', 'ERROR', 'CRITICAL'));
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_logs' AND column_name = 'created_at'
+    ) THEN
+        ALTER TABLE audit_logs ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
+    END IF;
+    
+    -- Convert ip_address from INET to VARCHAR(45) to match entity expectations
+    ALTER TABLE audit_logs ALTER COLUMN ip_address TYPE VARCHAR(45) USING host(ip_address);
+END $$;
 
 -- Indexes for audit_logs
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
@@ -175,6 +196,42 @@ BEGIN
     RETURN deleted_count;
 END;
 $$ LANGUAGE plpgsql;
+
+-- =============================================================================
+-- COMMUNICATION TABLES (Conversations & Messages)
+-- =============================================================================
+-- These tables support messaging between buyers and sellers
+
+CREATE TABLE IF NOT EXISTS conversations (
+    conversation_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    listing_id UUID NOT NULL,
+    buyer_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    seller_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_conversation UNIQUE (listing_id, buyer_id, seller_id)
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    message_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    conversation_id UUID NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for conversations
+CREATE INDEX IF NOT EXISTS idx_conversations_listing ON conversations(listing_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_seller ON conversations(seller_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_updated ON conversations(updated_at DESC);
+
+-- Indexes for messages
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(conversation_id, is_read) WHERE is_read = false;
 
 -- =============================================================================
 -- COMMENTS FOR DOCUMENTATION
