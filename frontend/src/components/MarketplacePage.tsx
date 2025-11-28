@@ -131,7 +131,8 @@ export function MarketplacePage() {
   async function loadTrending() {
     try {
       const response = await discoveryApi.getTrending(4);
-      setTrendingListings(response.products || []);
+      // Backend returns { trending: [...] }
+      setTrendingListings(response.trending || response.products || []);
     } catch (err) {
       console.error('Failed to load trending:', err);
     }
@@ -164,7 +165,10 @@ export function MarketplacePage() {
         size: 20,
       });
       let listingsArray: Listing[] = [];
-      if (Array.isArray(response.content)) {
+      // Backend SearchResponse uses 'results', but also check 'content' for compatibility
+      if (Array.isArray(response.results)) {
+        listingsArray = response.results;
+      } else if (Array.isArray(response.content)) {
         listingsArray = response.content;
       } else if (Array.isArray(response)) {
         listingsArray = response;

@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
-import { adminApi } from '../api';
+import { adminApi, userApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 
 interface Report {
-  reportId: number;
+  reportId: string;  // UUID from backend
   reportType: string;
   description: string;
-  listingId: string;
+  listingId?: string;
+  targetId?: string;
   listing?: any;
   reporter?: any;
+  reportedProduct?: any;
   status: string;
-  severity: string;
+  severity?: string;
+  priority?: string;
   createdAt: string;
 }
 
@@ -88,13 +91,21 @@ export function ReportListingPage() {
 
   useEffect(() => {
     loadReports();
-  }, []);
+  }, [isAdmin]);
 
   async function loadReports() {
     try {
       setLoading(true);
-      const data = await adminApi.getReports();
-      setReports(data.reports || []);
+      let data;
+      if (isAdmin) {
+        // Admin sees all reports
+        data = await adminApi.getReports();
+      } else {
+        // Regular users see only their own submitted reports
+        data = await userApi.getMyReports();
+      }
+      // Backend returns { content: [], ... } for paginated responses
+      setReports(data.content || data.reports || []);
     } catch (err) {
       console.error('Failed to load reports:', err);
     } finally {
@@ -102,7 +113,7 @@ export function ReportListingPage() {
     }
   }
 
-  async function handleUpdateReport(reportId: number, status: string) {
+  async function handleUpdateReport(reportId: string, status: string) {
     try {
       await adminApi.updateReport(reportId, { status });
       loadReports();
@@ -113,12 +124,16 @@ export function ReportListingPage() {
   }
 
   const filteredReports = reports.filter(report => {
+    // Backend may use reportedProduct instead of listing
+    const productTitle = report.listing?.title || report.reportedProduct?.title || '';
     const matchesSearch = 
-      report.listing?.title?.toLowerCase().includes(search.toLowerCase()) || 
+      productTitle.toLowerCase().includes(search.toLowerCase()) || 
       report.description?.toLowerCase().includes(search.toLowerCase()) ||
       report.reporter?.username?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
-    const matchesSeverity = severityFilter === 'all' || report.severity === severityFilter;
+    // Backend uses priority instead of severity
+    const reportSeverity = report.severity || report.priority || 'LOW';
+    const matchesSeverity = severityFilter === 'all' || reportSeverity.toUpperCase() === severityFilter.toUpperCase();
     return matchesSearch && matchesStatus && matchesSeverity;
   });
 
@@ -136,9 +151,9 @@ export function ReportListingPage() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold gradient-text">CampusConnect</h1>
-              <p className="text-sm text-muted">Report Management</p>
+              <p className="text-sm text-muted">{isAdmin ? 'Report Management' : 'My Reports'}</p>
             </div>
-            <h1 className="sm:hidden text-lg font-bold gradient-text">Reports</h1>
+            <h1 className="sm:hidden text-lg font-bold gradient-text">{isAdmin ? 'Reports' : 'My Reports'}</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
@@ -447,30 +462,41 @@ export function ReportListingPage() {
               )}
               
               <div className="flex gap-3 pt-4 border-t border-white/10 dark:border-white/5">
-                <button
-                  onClick={() => {
-                    handleUpdateReport(selectedReport.reportId, 'RESOLVED');
-                    setSelectedReport(null);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Approve Listing
-                </button>
-                <button
-                  onClick={() => {
-                    handleUpdateReport(selectedReport.reportId, 'DISMISSED');
-                    setSelectedReport(null);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Reject Listing
-                </button>
+                {isAdmin ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleUpdateReport(selectedReport.reportId, 'RESOLVED');
+                        setSelectedReport(null);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Approve Listing
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleUpdateReport(selectedReport.reportId, 'DISMISSED');
+                        setSelectedReport(null);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Reject Listing
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setSelectedReport(null)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-600 hover:bg-slate-700 text-white font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    Close
+                  </button>
+                )}
               </div>
             </div>
           </div>

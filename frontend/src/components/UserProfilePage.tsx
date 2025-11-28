@@ -79,11 +79,12 @@ export function UserProfilePage({ onBack }: Props) {
   async function handleSaveProfile() {
     try {
       setSaving(true);
+      // Clean up empty strings - send undefined instead for optional fields
       await userApi.updateProfile({
-        firstName: editData.firstName,
-        lastName: editData.lastName,
-        phone: editData.phone,
-        major: editData.major,
+        firstName: editData.firstName || undefined,
+        lastName: editData.lastName || undefined,
+        phone: editData.phone || undefined,
+        major: editData.major || undefined,
         graduationYear: editData.graduationYear ? parseInt(editData.graduationYear) : undefined,
       });
       await loadData();

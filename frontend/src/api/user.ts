@@ -24,6 +24,20 @@ export async function updateProfile(data: Partial<UserProfile>) {
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  const res = await api.post('/users/change-password', { currentPassword, newPassword })
+  // Backend expects currentPassword, newPassword, and confirmPassword
+  const res = await api.post('/users/change-password', { 
+    currentPassword, 
+    newPassword,
+    confirmPassword: newPassword  // Auto-confirm since frontend doesn't have confirm field
+  })
+  return res.data
+}
+
+/**
+ * Get the current user's submitted reports
+ * Uses GET /reports/my-reports endpoint
+ */
+export async function getMyReports() {
+  const res = await api.get('/reports/my-reports')
   return res.data
 }

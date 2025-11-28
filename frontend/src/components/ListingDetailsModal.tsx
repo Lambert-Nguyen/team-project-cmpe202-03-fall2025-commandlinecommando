@@ -431,7 +431,7 @@ export function ListingDetailsModal({ listingId, onClose, onViewListing }: Props
                   <option value="SPAM">Spam</option>
                   <option value="INAPPROPRIATE">Inappropriate Content</option>
                   <option value="SCAM">Suspected Scam</option>
-                  <option value="WRONG_CATEGORY">Wrong Category</option>
+                  <option value="FAKE">Fake/Misleading</option>
                   <option value="OTHER">Other</option>
                 </select>
               </div>

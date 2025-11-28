@@ -36,8 +36,16 @@ export function RegisterForm({
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    // Backend requires at least one letter and one number
+    const hasLetter = /[A-Za-z]/.test(formData.password);
+    const hasNumber = /\d/.test(formData.password);
+    if (!hasLetter || !hasNumber) {
+      setError('Password must contain at least one letter and one number');
       return;
     }
 
