@@ -31,7 +31,8 @@ public class ProfileUpdateRequest {
     @Email(message = "Invalid email format")
     private String email;
     
-    @Pattern(regexp = "^[\\+]?[0-9\\s\\-\\(\\)]{7,20}$", message = "Invalid phone number format")
+    // Pattern allows empty string OR valid phone format (7-20 chars with digits, spaces, hyphens, parens)
+    @Pattern(regexp = "^$|^[\\+]?[0-9\\s\\-\\(\\)]{7,20}$", message = "Invalid phone number format")
     private String phone;
     
     private String avatarUrl;
