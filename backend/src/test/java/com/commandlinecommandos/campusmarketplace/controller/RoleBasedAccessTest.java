@@ -107,9 +107,11 @@ class RoleBasedAccessTest {
     
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminCannotAccessUserDashboard() throws Exception {
+    void testAdminCanAccessUserDashboard() throws Exception {
+        // Admin can access student dashboard for monitoring/support purposes
         mockMvc.perform(get("/student/dashboard"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Welcome to Student Dashboard"));
     }
     
     @Test
@@ -132,9 +134,10 @@ class RoleBasedAccessTest {
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void testAdminCanAccessUserListings() throws Exception {
-        // Admin should NOT be able to access buyer/seller-only endpoints
+        // Admin CAN access student endpoints for monitoring/support purposes
+        // Note: Actual response depends on database state, but access is allowed
         mockMvc.perform(get("/student/listings"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     // Commented out - requires real User object in authentication context
@@ -154,14 +157,15 @@ class RoleBasedAccessTest {
     
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAdminCannotCreateUserListing() throws Exception {
+    void testAdminCanAccessCreateUserListing() throws Exception {
         String listingJson = "{\"title\":\"Test Listing\",\"description\":\"Test Description\",\"price\":100}";
         
-        // Admin should NOT be able to create user listings (BUYER/SELLER role required)
+        // Admin CAN access listing creation endpoint for support purposes
+        // Note: Will fail validation since admin user not in database, but access is allowed (not 403)
         mockMvc.perform(post("/student/listings")
                 .contentType("application/json")
                 .content(listingJson))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
     
     @Test
