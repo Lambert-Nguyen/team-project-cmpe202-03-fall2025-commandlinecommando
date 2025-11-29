@@ -40,11 +40,9 @@ export function AskAIPage() {
 
   async function loadData() {
     try {
-      const [listingsResponse, reportsResponse] = await Promise.all([
-        listingsApi.getListings(0, 100),
-        adminApi.getReports()
-      ]);
-      
+      // Fetch listings (available to all users)
+      const listingsResponse = await listingsApi.getListings(0, 100);
+
       let listingsArray: Listing[] = [];
       if (Array.isArray(listingsResponse)) {
         listingsArray = listingsResponse;
@@ -54,12 +52,24 @@ export function AskAIPage() {
         listingsArray = listingsResponse.listings;
       }
       setListings(listingsArray);
-      
-      if (Array.isArray(reportsResponse)) {
-        setReports(reportsResponse);
+      console.log('Loaded listings:', listingsArray.length);
+
+      // Try to fetch reports (admin only - will fail gracefully for non-admin users)
+      try {
+        const reportsResponse = await adminApi.getReports();
+        if (Array.isArray(reportsResponse)) {
+          setReports(reportsResponse);
+          console.log('Loaded reports:', reportsResponse.length);
+        }
+      } catch (reportErr: any) {
+        // Reports require admin access - this is expected for non-admin users
+        console.log('Reports not available (admin access required)');
+        setReports([]);
       }
     } catch (err) {
       console.error('Failed to load data:', err);
+      setListings([]);
+      setReports([]);
     }
   }
 
@@ -100,7 +110,8 @@ export function AskAIPage() {
       const listingsContext = formatListingsContext(listings);
       const reportsContext = formatReportsContext(reports);
       
-      const response = await fetch('/api/chat', {
+      // Use AI service endpoint - /ai/chat will be proxied to port 3001 by Vite
+      const response = await fetch('/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
