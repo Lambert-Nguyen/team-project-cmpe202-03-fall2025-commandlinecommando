@@ -146,11 +146,14 @@ public class ListingsService {
     }
     
     /**
-     * Get listings by seller
+     * Get listings by seller (includes both active and inactive/sold listings for profile view)
      */
     public Page<Product> getListingsBySeller(UUID sellerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return productRepository.findBySellerUserIdAndIsActiveTrue(sellerId, pageable);
+        // Fetch user first, then get all their products (not just active ones)
+        User seller = userRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        return productRepository.findBySeller(seller, pageable);
     }
 
     /**
@@ -206,6 +209,17 @@ public class ListingsService {
             Object quantityObj = updates.get("quantity");
             if (quantityObj instanceof Number) {
                 product.setQuantity(((Number) quantityObj).intValue());
+            }
+        }
+        // Handle status field - map "SOLD" to isActive = false
+        if (updates.containsKey("status")) {
+            String status = (String) updates.get("status");
+            if ("SOLD".equalsIgnoreCase(status)) {
+                product.setActive(false);
+                // Optionally set quantity to 0 to indicate sold out
+                product.setSoldQuantity(product.getQuantity());
+            } else if ("ACTIVE".equalsIgnoreCase(status)) {
+                product.setActive(true);
             }
         }
 
@@ -302,7 +316,14 @@ public class ListingsService {
         response.setImages(new java.util.ArrayList<>());
         
         // Status mapping - convert isActive to status string
-        response.setStatus(product.isActive() ? "ACTIVE" : "INACTIVE");
+        // If inactive, check if it was sold (soldQuantity > 0) vs just deactivated
+        if (product.isActive()) {
+            response.setStatus("ACTIVE");
+        } else if (product.getSoldQuantity() != null && product.getSoldQuantity() > 0) {
+            response.setStatus("SOLD");
+        } else {
+            response.setStatus("INACTIVE");
+        }
         
         // Metrics
         response.setViewCount(product.getViewCount() != null ? product.getViewCount() : 0);
