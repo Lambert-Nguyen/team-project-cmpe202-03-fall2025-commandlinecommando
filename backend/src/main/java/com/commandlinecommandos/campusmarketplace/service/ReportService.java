@@ -119,19 +119,26 @@ public class ReportService {
     
     /**
      * Approve report and take action
+     * When a report is approved, it means the report is valid and action should be taken
      */
     public UserReport approveReport(UUID reportId, User admin, String resolutionNotes) {
         UserReport report = getReport(reportId);
         report.approve(admin, resolutionNotes);
-        
+
         // Take action based on report type
         if (report.getReportedProduct() != null) {
-            // Flag or deactivate the product
+            // Deactivate and reject the product to remove it from marketplace
             Product product = report.getReportedProduct();
-            product.setModerationStatus(ModerationStatus.FLAGGED);
+            product.setActive(false);  // Hide from marketplace
+            product.setModerationStatus(ModerationStatus.REJECTED);  // Mark as rejected by admin
             productRepository.save(product);
         }
-        
+
+        if (report.getReportedUser() != null) {
+            // TODO: Implement action against reported user (e.g., suspension, warning)
+            // For now, only the report status is updated
+        }
+
         return reportRepository.save(report);
     }
     
