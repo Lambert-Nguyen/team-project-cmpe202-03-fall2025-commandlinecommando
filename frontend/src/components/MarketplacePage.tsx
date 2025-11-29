@@ -104,7 +104,7 @@ export function MarketplacePage() {
     try {
       setLoading(true);
       const response = await listingsApi.getListings(page, 20);
-      
+
       let listingsArray: Listing[] = [];
       if (Array.isArray(response)) {
         listingsArray = response;
@@ -116,7 +116,7 @@ export function MarketplacePage() {
         console.warn('Unexpected listings response format:', response);
         listingsArray = [];
       }
-      
+
       setListings(listingsArray);
       setTotalPages(response.totalPages || 1);
     } catch (err) {
@@ -213,6 +213,11 @@ export function MarketplacePage() {
           l.id === listingId ? { ...l, favorite: result.favorited } : l
         )
       );
+      setTrendingListings(prev =>
+        prev.map(l =>
+          l.id === listingId ? { ...l, favorite: result.favorited } : l
+        )
+      );
     } catch (err) {
       console.error('Failed to toggle favorite:', err);
     }
@@ -303,7 +308,7 @@ export function MarketplacePage() {
                 </div>
               </div>
             )}
-            <button 
+            <button
               onClick={() => setShowCreateModal(true)}
               className="nav-button-primary !px-2 sm:!px-4"
             >
@@ -313,7 +318,7 @@ export function MarketplacePage() {
               <span className="hidden sm:inline">Sell Item</span>
             </button>
             <ThemeToggle />
-            <button 
+            <button
               onClick={handleLogout}
               className="nav-button !px-2 sm:!px-4 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30"
             >
@@ -335,20 +340,32 @@ export function MarketplacePage() {
               </svg>
               Trending Now
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {trendingListings.map(item => (
-                <button
+                <div
                   key={item.id}
                   onClick={() => setSelectedListingId(item.id)}
-                  className="flex-shrink-0 w-56 glass-card overflow-hidden card-hover text-left group"
+                  className="glass-card overflow-hidden card-hover cursor-pointer group"
                 >
-                  <div className="h-40 bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
-                    <img src={item.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
+                    <img
+                      src={item.imageUrl || 'https://via.placeholder.com/300'}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <button
+                      onClick={(e) => handleToggleFavorite(item.id, e)}
+                      className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all ${item.favorite ? 'bg-red-500 text-white scale-110' : 'glass-button'}`}
+                    >
+                      <svg className="w-5 h-5" fill={item.favorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </button>
                   </div>
                   <div className="p-4">
-                    <p className="font-semibold truncate">{item.title}</p>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    <h3 className="font-semibold truncate">{item.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       <span className="badge badge-primary text-xs">
                         {item.category?.replace(/_/g, ' ')}
                       </span>
@@ -359,9 +376,33 @@ export function MarketplacePage() {
                         <span className="badge badge-warning text-xs">Negotiable</span>
                       )}
                     </div>
-                    <p className="text-lg font-bold gradient-text mt-3">${item.price?.toFixed(2)}</p>
+                    <p className="text-muted text-sm mt-2 line-clamp-2">{item.description}</p>
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-xl font-bold gradient-text">${item.price?.toFixed(2)}</span>
+                      <span className="text-xs text-muted flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        {item.viewCount || 0}
+                      </span>
+                    </div>
+                    {item.seller && (
+                      <div className="flex items-center gap-2 mt-4 pt-4 border-t border-glass">
+                        <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center overflow-hidden text-white text-xs font-bold">
+                          {item.seller.avatarUrl ? (
+                            <img src={item.seller.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            item.seller.name?.charAt(0) || item.seller.username?.charAt(0) || 'S'
+                          )}
+                        </div>
+                        <span className="text-sm text-muted truncate">
+                          {item.seller.name || item.seller.username}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -625,8 +666,8 @@ export function MarketplacePage() {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create New Listing</h2>
               </div>
-              <button 
-                onClick={() => setShowCreateModal(false)} 
+              <button
+                onClick={() => setShowCreateModal(false)}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl transition-colors"
               >
                 ×
