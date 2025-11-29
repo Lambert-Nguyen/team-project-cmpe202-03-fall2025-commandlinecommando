@@ -26,58 +26,58 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @Service
 @Transactional
 public class ListingsService {
-    
+
     @Autowired
     private ProductRepository productRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
+    @Autowired
+    private com.commandlinecommandos.campusmarketplace.repository.UserFavoriteRepository userFavoriteRepository;
+
     /**
      * Get all active listings with pagination
      */
     public Page<Product> getAllListings(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt", "createdAt"));
         return productRepository.findByIsActiveTrueAndModerationStatus(
-            ModerationStatus.APPROVED, 
-            pageable
-        );
+                ModerationStatus.APPROVED,
+                pageable);
     }
-    
+
     /**
      * Get listings by category
      */
     public Page<Product> getListingsByCategory(ProductCategory category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"));
         return productRepository.findByCategoryAndIsActiveTrueAndModerationStatus(
-            category,
-            ModerationStatus.APPROVED,
-            pageable
-        );
+                category,
+                ModerationStatus.APPROVED,
+                pageable);
     }
-    
+
     /**
      * Search listings
      */
-    public Page<Product> searchListings(String keyword, ProductCategory category, 
-                                       BigDecimal minPrice, BigDecimal maxPrice,
-                                       int page, int size) {
+    public Page<Product> searchListings(String keyword, ProductCategory category,
+            BigDecimal minPrice, BigDecimal maxPrice,
+            int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"));
-        
+
         // For now, return all active listings (can be enhanced with proper search)
         return productRepository.findByIsActiveTrueAndModerationStatus(
-            ModerationStatus.APPROVED,
-            pageable
-        );
+                ModerationStatus.APPROVED,
+                pageable);
     }
-    
+
     /**
      * Get listing by ID
      */
     public Product getListingById(UUID id) {
         return productRepository.findById(id).orElse(null);
     }
-    
+
     /**
      * Create a new listing (uses current authenticated user as seller)
      */
@@ -87,10 +87,10 @@ public class ListingsService {
             throw new RuntimeException("User not authenticated");
         }
         User seller = (User) authentication.getPrincipal();
-        
+
         return createListing(seller, listingData);
     }
-    
+
     /**
      * Create a new listing with specified seller
      */
@@ -100,7 +100,7 @@ public class ListingsService {
         product.setUniversity(seller.getUniversity());
         product.setTitle((String) listingData.get("title"));
         product.setDescription((String) listingData.get("description"));
-        
+
         // Parse category
         String categoryStr = (String) listingData.get("category");
         if (categoryStr != null) {
@@ -112,7 +112,7 @@ public class ListingsService {
         } else {
             product.setCategory(ProductCategory.OTHER);
         }
-        
+
         // Parse condition
         String conditionStr = (String) listingData.get("condition");
         if (conditionStr != null) {
@@ -124,7 +124,7 @@ public class ListingsService {
         } else {
             product.setCondition(ProductCondition.GOOD);
         }
-        
+
         // Parse price
         Object priceObj = listingData.get("price");
         if (priceObj instanceof Number) {
@@ -132,27 +132,28 @@ public class ListingsService {
         } else if (priceObj instanceof String) {
             product.setPrice(new BigDecimal((String) priceObj));
         }
-        
+
         // Parse location/pickup location
         if (listingData.containsKey("location")) {
             product.setPickupLocation((String) listingData.get("location"));
         }
-        
+
         product.setModerationStatus(ModerationStatus.APPROVED); // Auto-approve for now
         product.setActive(true);
         product.publish();
-        
+
         return productRepository.save(product);
     }
-    
+
     /**
-     * Get listings by seller (includes both active and inactive/sold listings for profile view)
+     * Get listings by seller (includes both active and inactive/sold listings for
+     * profile view)
      */
     public Page<Product> getListingsBySeller(UUID sellerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         // Fetch user first, then get all their products (not just active ones)
         User seller = userRepository.findById(sellerId)
-            .orElseThrow(() -> new RuntimeException("Seller not found"));
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
         return productRepository.findBySeller(seller, pageable);
     }
 
@@ -161,7 +162,7 @@ public class ListingsService {
      */
     public Product updateListing(UUID listingId, Map<String, Object> updates, String username) {
         Product product = productRepository.findById(listingId)
-            .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
 
         // Verify ownership (unless admin)
         if (!product.getSeller().getUsername().equals(username)) {
@@ -231,7 +232,7 @@ public class ListingsService {
      */
     public void deleteListing(UUID listingId, String username) {
         Product product = productRepository.findById(listingId)
-            .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
+                .orElseThrow(() -> new RuntimeException("Listing not found with id: " + listingId));
 
         // Verify ownership (unless admin)
         if (!product.getSeller().getUsername().equals(username)) {
@@ -255,11 +256,12 @@ public class ListingsService {
         dto.put("condition", product.getCondition().name());
         dto.put("price", product.getPrice().doubleValue());
         dto.put("location", product.getPickupLocation() != null ? product.getPickupLocation() : "Campus");
-        dto.put("date", product.getPublishedAt() != null ? product.getPublishedAt().toString() : product.getCreatedAt().toString());
+        dto.put("date", product.getPublishedAt() != null ? product.getPublishedAt().toString()
+                : product.getCreatedAt().toString());
         dto.put("createdAt", product.getCreatedAt() != null ? product.getCreatedAt().toString() : "");
         String sellerId = product.getSeller().getUserId() != null ? product.getSeller().getUserId().toString() : "";
         String sellerName = (product.getSeller().getFirstName() != null ? product.getSeller().getFirstName() : "") +
-                           " " + (product.getSeller().getLastName() != null ? product.getSeller().getLastName() : "");
+                " " + (product.getSeller().getLastName() != null ? product.getSeller().getLastName() : "");
         sellerName = sellerName.trim().isEmpty() ? product.getSeller().getUsername() : sellerName;
 
         dto.put("sellerId", sellerId);
@@ -277,10 +279,49 @@ public class ListingsService {
     }
 
     /**
-     * Convert Product to ListingDetailResponse DTO (new format matching frontend mockdata)
+     * Convert Product to ListingDetailResponse DTO (new format matching frontend
+     * mockdata)
      */
     public ListingDetailResponse toListingDetailResponse(Product product) {
-        return toListingDetailResponse(product, false);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isFavorite = false;
+
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            User currentUser = (User) authentication.getPrincipal();
+            // Need to reload user from DB to ensure it's attached to session if needed,
+            // or just use the ID. Repository expects User entity.
+            // Using existsByUserAndProduct requires User entity.
+            // Ideally we should use ID, but repository method signature uses Entity.
+            // Let's try to use the principal directly if it's a complete entity,
+            // otherwise fetch reference.
+            try {
+                // Safe check to avoid issues if principal is not fully managed
+                isFavorite = userFavoriteRepository.existsByUserAndProduct(currentUser, product);
+            } catch (Exception e) {
+                // Fallback: fetch user by ID
+                try {
+                    User managedUser = userRepository.findById(currentUser.getUserId()).orElse(null);
+                    if (managedUser != null) {
+                        isFavorite = userFavoriteRepository.existsByUserAndProduct(managedUser, product);
+                    }
+                } catch (Exception ex) {
+                    // Ignore
+                }
+            }
+        } else if (authentication != null && authentication.getName() != null
+                && !authentication.getName().equals("anonymousUser")) {
+            // Handle case where principal is just a username (String)
+            try {
+                User user = userRepository.findByUsername(authentication.getName()).orElse(null);
+                if (user != null) {
+                    isFavorite = userFavoriteRepository.existsByUserAndProduct(user, product);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+
+        return toListingDetailResponse(product, isFavorite);
     }
 
     /**
@@ -288,7 +329,7 @@ public class ListingsService {
      */
     public ListingDetailResponse toListingDetailResponse(Product product, boolean isFavorite) {
         ListingDetailResponse response = new ListingDetailResponse();
-        
+
         // Basic fields
         response.setId(product.getProductId().toString());
         response.setTitle(product.getTitle());
@@ -297,24 +338,24 @@ public class ListingsService {
         response.setCondition(product.getCondition().name());
         response.setPrice(product.getPrice().doubleValue());
         response.setLocation(product.getPickupLocation() != null ? product.getPickupLocation() : "Campus");
-        
+
         // Seller information
         User seller = product.getSeller();
         SellerSummary sellerSummary = new SellerSummary();
         sellerSummary.setId(seller.getUserId().toString());
         sellerSummary.setUsername(seller.getUsername());
         String sellerName = (seller.getFirstName() != null ? seller.getFirstName() : "") +
-                           " " + (seller.getLastName() != null ? seller.getLastName() : "");
+                " " + (seller.getLastName() != null ? seller.getLastName() : "");
         sellerSummary.setName(sellerName.trim().isEmpty() ? seller.getUsername() : sellerName.trim());
         sellerSummary.setAvatarUrl(seller.getAvatarUrl());
         response.setSeller(sellerSummary);
         response.setSellerId(seller.getUserId().toString());
-        
+
         // Images - for now set main image URL and empty images array
         // TODO: Populate from ProductImage entity when available
         response.setImageUrl(null);
         response.setImages(new java.util.ArrayList<>());
-        
+
         // Status mapping - convert isActive to status string
         // If inactive, check if it was sold (soldQuantity > 0) vs just deactivated
         if (product.isActive()) {
@@ -324,20 +365,19 @@ public class ListingsService {
         } else {
             response.setStatus("INACTIVE");
         }
-        
+
         // Metrics
         response.setViewCount(product.getViewCount() != null ? product.getViewCount() : 0);
         response.setFavoriteCount(product.getFavoriteCount() != null ? product.getFavoriteCount() : 0);
         response.setFavorite(isFavorite);
-        
+
         // Additional fields
         response.setNegotiable(product.isNegotiable());
-        
+
         // Timestamps
         response.setCreatedAt(product.getCreatedAt() != null ? product.getCreatedAt().toString() : "");
         response.setUpdatedAt(product.getUpdatedAt() != null ? product.getUpdatedAt().toString() : "");
-        
+
         return response;
     }
 }
-
