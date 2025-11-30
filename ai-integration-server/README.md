@@ -29,8 +29,11 @@ The server starts on port 3001.
 ### Using Docker
 
 ```bash
-# From project root, start with AI profile
-docker-compose --profile ai up -d ai-integration-server
+# From project root, start all services (AI service starts by default)
+docker-compose -f docker-compose.prod.yml up -d
+
+# Or start only the AI service
+docker-compose -f docker-compose.prod.yml up -d ai-integration-server
 ```
 
 ## API Endpoints
