@@ -82,6 +82,12 @@ services:
       FILE_UPLOAD_MAX_SIZE: ${FILE_UPLOAD_MAX_SIZE:-10485760}
       FILE_UPLOAD_DIR: ${FILE_UPLOAD_DIR:-./uploads}
 
+      # AWS S3 Configuration for Image Upload
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-webapp-s3-bucket-2025}
+      AWS_REGION: ${AWS_REGION:-us-west-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       SQL_LOG_LEVEL: ${SQL_LOG_LEVEL:-WARN}
