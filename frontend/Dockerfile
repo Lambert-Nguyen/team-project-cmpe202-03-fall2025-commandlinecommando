@@ -21,10 +21,14 @@ COPY . .
 # Build arguments for environment configuration
 ARG VITE_API_URL=/api
 ARG VITE_AI_SERVICE_URL=/ai
+ARG VITE_API_BASE_URL=/api
+ARG VITE_AI_API_SERVICE_URL=/ai
 
-# Set environment variables for build
+# Set environment variables for build (Vite only exposes vars starting with VITE_)
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_AI_SERVICE_URL=${VITE_AI_SERVICE_URL}
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_AI_API_SERVICE_URL=${VITE_AI_API_SERVICE_URL}
 
 # Build the application
 RUN npm run build
