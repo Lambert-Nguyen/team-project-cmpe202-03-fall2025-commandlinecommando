@@ -59,14 +59,14 @@ Welcome to the Campus Marketplace database documentation! This directory contain
 cat db/docs/ONBOARDING_CHECKLIST.md
 
 # Or get started quickly
-docker-compose up -d
+docker-compose -f docker-compose.prod.yml up -d
 ./db/scripts/validate-connection.sh
 ```
 
 ### Daily Development
 ```bash
 # Start services
-docker-compose up -d
+docker-compose -f docker-compose.prod.yml up -d
 
 # Validate everything works
 ./db/scripts/validate-connection.sh
@@ -81,7 +81,7 @@ cat db/docs/QUICK_REFERENCE.md
 ./db/scripts/validate-connection.sh
 
 # Check service status
-docker-compose ps
+docker-compose -f docker-compose.prod.yml ps
 
 # View troubleshooting guide
 cat db/docs/QUICK_REFERENCE.md
