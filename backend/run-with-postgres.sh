@@ -2,21 +2,51 @@
 # Start Campus Marketplace with PostgreSQL Database (Production Profile)
 # The spring-dotenv library automatically loads environment variables from .env
 
-# AWS S3 Configuration (set defaults if not already set)
-export AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-webapp-s3-bucket-2025}
-export AWS_REGION=${AWS_REGION:-us-west-1}
-export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-AKIAZPTIR2WZ33YQAD63}
-export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-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}
+# Load .env file if it exists
+if [ -f .env ]; then
+    echo "Loading environment from .env file..."
+    export $(grep -v '^#' .env | xargs)
+fi
 
-# Check if .env file exists (optional now, we have defaults above)
-if [ ! -f .env ]; then
+# Check required AWS S3 environment variables
+missing_vars=()
+
+if [ -z "$AWS_S3_BUCKET_NAME" ]; then
+    missing_vars+=("AWS_S3_BUCKET_NAME")
+fi
+
+if [ -z "$AWS_REGION" ]; then
+    missing_vars+=("AWS_REGION")
+fi
+
+if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+    missing_vars+=("AWS_ACCESS_KEY_ID")
+fi
+
+if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    missing_vars+=("AWS_SECRET_ACCESS_KEY")
+fi
+
+# Exit if any required variables are missing
+if [ ${#missing_vars[@]} -ne 0 ]; then
     echo "========================================="
-    echo "WARNING: .env file not found!"
+    echo "ERROR: Missing required environment variables!"
     echo "========================================="
-    echo "Using default environment variables."
-    echo "For custom settings, create a .env file:"
-    echo "  cp env.example .env"
+    for var in "${missing_vars[@]}"; do
+        echo "  - $var"
+    done
+    echo ""
+    echo "Please set these variables either:"
+    echo "  1. Create a .env file with these values"
+    echo "  2. Export them in your shell before running"
+    echo ""
+    echo "Example .env file:"
+    echo "  AWS_S3_BUCKET_NAME=your-bucket-name"
+    echo "  AWS_REGION=us-west-1"
+    echo "  AWS_ACCESS_KEY_ID=your-access-key"
+    echo "  AWS_SECRET_ACCESS_KEY=your-secret-key"
     echo "========================================="
+    exit 1
 fi
 
 # Display configuration info
@@ -24,7 +54,6 @@ echo "========================================="
 echo "Campus Marketplace - PostgreSQL Mode"
 echo "========================================="
 echo "Profile: postgres"
-echo "Environment: Loading from .env file (if exists)"
 echo "Database: PostgreSQL"
 echo "S3 Bucket: $AWS_S3_BUCKET_NAME"
 echo "AWS Region: $AWS_REGION"
@@ -32,5 +61,4 @@ echo "========================================="
 echo ""
 
 # Start the application with postgres profile
-# The spring-dotenv library will automatically load .env if present
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
