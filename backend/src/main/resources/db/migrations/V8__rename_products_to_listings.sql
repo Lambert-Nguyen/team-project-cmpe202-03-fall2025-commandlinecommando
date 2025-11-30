@@ -1,5 +1,5 @@
 -- =============================================================================
--- V9__rename_products_to_listings.sql
+-- V8__rename_products_to_listings.sql
 -- Rename products table to listings for domain consistency
 -- =============================================================================
 -- Purpose: Align database table names with domain language

@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Campus Marketplace Database Schema - Refresh Tokens Table
--- Version: 10.0.0
+-- Version: 9.0.0
 -- Date: 2025-11-26
 -- Description: Creates refresh_tokens table for JWT refresh token management
 -- =============================================================================
