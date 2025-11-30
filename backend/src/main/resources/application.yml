@@ -113,6 +113,15 @@ app:
 file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}
 
+# AWS S3 Configuration for Image Upload
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:webapp-s3-bucket-2025}
+    region: ${AWS_REGION:us-west-1}
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+
 ---
 # ==============================================
 # DEVELOPMENT PROFILE (H2 Database)
