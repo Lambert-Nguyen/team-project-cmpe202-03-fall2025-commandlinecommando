@@ -138,6 +138,19 @@ public class ListingsService {
             product.setPickupLocation((String) listingData.get("location"));
         }
 
+        // Parse image URLs
+        if (listingData.containsKey("imageUrls")) {
+            Object imageUrlsObj = listingData.get("imageUrls");
+            if (imageUrlsObj instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<String> imageUrls = (List<String>) imageUrlsObj;
+                product.setImageUrls(imageUrls);
+                if (!imageUrls.isEmpty()) {
+                    product.setPrimaryImageUrl(imageUrls.get(0));
+                }
+            }
+        }
+
         product.setModerationStatus(ModerationStatus.APPROVED); // Auto-approve for now
         product.setActive(true);
         product.publish();
@@ -270,7 +283,8 @@ public class ListingsService {
         sellerInfo.put("name", sellerName);
         sellerInfo.put("username", product.getSeller().getUsername());
         dto.put("seller", sellerInfo);
-        dto.put("imageUrl", null); // Can be added later
+        dto.put("imageUrl", product.getPrimaryImageUrl());
+        dto.put("imageUrls", product.getImageUrls());
         dto.put("viewCount", product.getViewCount() != null ? product.getViewCount() : 0);
         dto.put("favoriteCount", product.getFavoriteCount() != null ? product.getFavoriteCount() : 0);
         dto.put("negotiable", product.isNegotiable());
@@ -351,10 +365,23 @@ public class ListingsService {
         response.setSeller(sellerSummary);
         response.setSellerId(seller.getUserId().toString());
 
-        // Images - for now set main image URL and empty images array
-        // TODO: Populate from ProductImage entity when available
-        response.setImageUrl(null);
-        response.setImages(new java.util.ArrayList<>());
+        // Images - populate from Product entity
+        response.setImageUrl(product.getPrimaryImageUrl());
+        List<String> imageUrls = product.getImageUrls();
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            List<ListingImage> images = new java.util.ArrayList<>();
+            for (int i = 0; i < imageUrls.size(); i++) {
+                ListingImage img = new ListingImage();
+                img.setImageId((long) i);
+                img.setImageUrl(imageUrls.get(i));
+                img.setAltText(product.getTitle());
+                img.setDisplayOrder(i);
+                images.add(img);
+            }
+            response.setImages(images);
+        } else {
+            response.setImages(new java.util.ArrayList<>());
+        }
 
         // Status mapping - convert isActive to status string
         // If inactive, check if it was sold (soldQuantity > 0) vs just deactivated
