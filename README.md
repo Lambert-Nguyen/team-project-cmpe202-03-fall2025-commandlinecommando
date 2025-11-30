@@ -13,7 +13,7 @@ Our team built a unified backend system by combining multiple services into one 
 
 | Name | Areas of Contribution |
 |------|----------------------|
-| **Vineet Kumar** | Backend API development, Authentication & JWT, Database design, AWS S3 integration, DevOps & Docker, Frontend Integration with Backend |
+| **Vineet Kumar** | Backend API development, Authentication & JWT, Database design, AWS S3 integration, DevOps & Docker, Frontend Integration with Backend, Team Leadership |
 | **Sakshat Patil** | Frontend development, React components, UI/UX design, Marketplace page, Listing details |
 | **Lam Nguyen** | Frontend and Backend components, User authentication flow, Profile management, Backend Testing |
 | **Wilson Huang** | Backend services, Chat/Messaging system, Search functionality, Admin dashboard API |
@@ -30,7 +30,7 @@ To divide the work clearly, each team member took responsibility for one major p
 
 | Team Member | Component Owned |
 |-------------|-----------------|
-| **Vineet** | Backend Dev, AWS Deployment, Infrastructure Setup, Ask AI Feature Dev, Frontend Theme Dev, Frontend & Backend Integration, S3 File Storage, ALB Integration |
+| **Vineet** | Backend Dev, AWS Deployment, Infrastructure Setup, Ask AI Feature Dev, Frontend Theme Dev, Frontend & Backend Integration, S3 File Storage, ALB Integration, Leading Team & Coordination |
 | **Lam** | User Management System (backend), Search Integration, Authentication |
 | **Sakshat** | Frontend UI (Login, Listings, Management), E2E UI Integration |
 | **Wilson** | Listing API, Database Integration, File Upload Service |
