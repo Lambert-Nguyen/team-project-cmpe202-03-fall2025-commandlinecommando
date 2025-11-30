@@ -1,6 +1,7 @@
-# Campus Marketplace
+# Campus Marketplace – Unified Backend
 
-A marketplace platform for university students to buy and sell items within their campus community.
+A campus-exclusive marketplace for SJSU students to buy and sell items such as textbooks, electronics, gadgets, and essentials.  
+Our team built a unified backend system by combining multiple services into one clean and modular architecture.
 
 ---
 
@@ -12,10 +13,10 @@ A marketplace platform for university students to buy and sell items within thei
 
 | Name | Areas of Contribution |
 |------|----------------------|
-| **Vineet Kumar** | Backend API development, Authentication & JWT, Database design, AWS S3 integration, Email notifications (SendGrid), DevOps & Docker |
+| **Vineet Kumar** | Backend API development, Authentication & JWT, Database design, AWS S3 integration, DevOps & Docker, Frontend Integration with Backend |
 | **Sakshat Patil** | Frontend development, React components, UI/UX design, Marketplace page, Listing details |
+| **Lam Nguyen** | Frontend and Backend components, User authentication flow, Profile management, Backend Testing |
 | **Wilson Huang** | Backend services, Chat/Messaging system, Search functionality, Admin dashboard API |
-| **Lam Nguyen** | Frontend components, User authentication flow, Profile management, Testing |
 
 ## Project Links
 
@@ -24,7 +25,33 @@ A marketplace platform for university students to buy and sell items within thei
 
 ---
 
-## Quick Start
+# Component Ownership
+To divide the work clearly, each team member took responsibility for one major part of the system:
+
+| Team Member | Component Owned |
+|-------------|-----------------|
+| **Lam** | User Management System (backend), Search Integration, Authentication |
+| **Vineet** | AWS Deployment, Infrastructure Setup, ChatGPT Search Feature |
+| **Wilson** | Listing API, Database Integration, File Upload Service |
+| **Sakshat** | Frontend UI (Login, Listings, Management), E2E UI Integration |
+
+---
+
+# Project Journal & Scrum Artifacts
+
+All project documentation is maintained inside the `/project-journal` folder.
+
+| Artifact | Location |
+|----------|----------|
+| Weekly Scrum Reports | `project-journal/week1...week12` |
+| XP Core Values | `project-journal/xp-values.md` |
+| Sprint Backlogs (all 6 sprints) | `project-journal/sprint-artifacts/` |
+| Task Board Summary | `project-journal/task-board/task-board-summary.md` |
+| Burndown Chart Data | `project-journal/burndown/` |
+
+---
+
+# Quick Start
 
 ### Using Docker (Recommended)
 
@@ -169,7 +196,7 @@ npm run dev
 
 ---
 
-## Features
+# Features (Short Summary)
 
 ### User Authentication
 - JWT-based login with access and refresh tokens
