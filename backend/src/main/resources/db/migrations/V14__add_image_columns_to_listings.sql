@@ -1,4 +1,4 @@
--- V16: Add image columns to listings table for S3 image upload support
+-- V14: Add image columns to listings table for S3 image upload support
 -- This migration adds support for storing multiple image URLs per listing
 
 -- Add image_urls column (JSON array of S3 URLs)

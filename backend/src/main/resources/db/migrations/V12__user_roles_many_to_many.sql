@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Campus Marketplace - User Roles Many-to-Many Migration
 -- CMPE 202 Project: Flexible Role-Based Access Control
--- Version: 14
+-- Version: 12
 -- 
 -- This migration converts the single-role-per-user design to a many-to-many
 -- relationship, allowing users (students) to have multiple roles (BUYER, SELLER)
