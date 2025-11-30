@@ -57,7 +57,7 @@ When the backend became available, this was switched to `false` to use real API 
 {
   id: "user-1",
   username: "john_doe",
-  email: "john@university.edu",
+  email: "john@sjsu.edu",
   firstName: "John",
   lastName: "Doe",
   roles: ["BUYER", "SELLER"],

@@ -56,7 +56,7 @@ Request:
 ```json
 {
   "username": "newuser",
-  "email": "user@university.edu",
+  "email": "user@sjsu.edu",
   "password": "password123",
   "firstName": "John",
   "lastName": "Doe",
