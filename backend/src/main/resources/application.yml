@@ -40,14 +40,15 @@ spring:
     baseline-version: 0
     mixed: true  # Allow mixing transactional and non-transactional statements
   
-  # Mail Configuration
+  # Mail Configuration (SendGrid SMTP)
   mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
+    host: ${SMTP_HOST:smtp.sendgrid.net}
     port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME:}
+    username: ${SMTP_USERNAME:apikey}
     password: ${SMTP_PASSWORD:}
     properties:
       mail:
+        debug: true
         smtp:
           auth: true
           starttls:
@@ -55,7 +56,7 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-    from: ${EMAIL_FROM:noreply@campusmarketplace.com}
+    from: ${EMAIL_FROM:no-reply@seasonsanta.com}
 
 server:
   port: ${PORT:8080}
