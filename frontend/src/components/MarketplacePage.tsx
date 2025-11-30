@@ -400,7 +400,8 @@ export function MarketplacePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
-        {trendingListings.length > 0 && !searchQuery && (
+        {/* Temporarily disabled - TODO: fix image loading issues */}
+        {false && trendingListings.length > 0 && !searchQuery && (
           <div className="mb-8">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
