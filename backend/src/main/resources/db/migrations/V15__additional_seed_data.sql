@@ -459,6 +459,29 @@ SET primary_image_url = 'https://images.unsplash.com/photo-1518455027359-f3f8164
 WHERE title LIKE 'IKEA Desk%';
 
 -- =============================================================================
+-- FIX V2 PRODUCT_IMAGES TABLE (replace placeholder URLs with real ones)
+-- =============================================================================
+
+-- Update Data Structures textbook image
+UPDATE product_images 
+SET image_url = 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=800',
+    thumbnail_url = 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400'
+WHERE product_id = (SELECT product_id FROM listings WHERE title LIKE 'Data Structures%');
+
+-- Update MacBook Pro images
+UPDATE product_images 
+SET image_url = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800',
+    thumbnail_url = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'
+WHERE product_id = (SELECT product_id FROM listings WHERE title LIKE 'MacBook Pro%')
+AND is_primary = true;
+
+UPDATE product_images 
+SET image_url = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800',
+    thumbnail_url = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400'
+WHERE product_id = (SELECT product_id FROM listings WHERE title LIKE 'MacBook Pro%')
+AND is_primary = false;
+
+-- =============================================================================
 -- SUMMARY
 -- =============================================================================
 -- Added: 8 new users
