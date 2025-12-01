@@ -12,7 +12,7 @@ A campus marketplace for SJSU students to buy and sell items such as textbooks, 
 
 | Name | Contribution Summary |
 |------|----------------------|
-| **Vineet Kumar** | Authentication & authorization backend development, AI microservice development, Backend API's integration with frontend, Initial database design and seed data generation, AWS S3 integration with policies, DevOps & Docker integration between services, Frontend & backend proxy integration via nginx, AWS ALB Integreation, Team Leadership |
+| **Vineet Kumar** | Authentication & authorization backend development, AI microservice development, Backend API's integration with frontend, Initial database design and seed data generation, AWS S3 integration with policies, DevOps & Docker integration between services, Frontend & backend proxy integration via nginx, AWS ALB Integration, Team Leadership |
 | **Sakshat Patil** | Frontend development, React components, UI/UX design, Marketplace page, Listing details, Sprint artifacts & documentation |
 | **Lam Nguyen** | Frontend and backend components, User authentication flow, Profile management, Backend testing & refactoring |
 | **Wilson Huang** | Listing services, Chat/messaging system, Search functionality, Admin features, Backend & database integration |
@@ -43,7 +43,7 @@ To divide the work clearly, each team member took responsibility for one major p
 | Weekly Scrum Reports | [`project-journal/week1...week12`](project-journal/) |
 | XP Core Values | [`project-journal/xp-values.md`](project-journal/xp-values.md) |
 | Sprint Backlogs (all 6 sprints) | [`sprint-artifacts`](sprint-artifacts/) |
-| Spring Summary | [`burndown_charts/Sprint_Summary.png`](burndown_charts/Sprint_Summary.png) |
+| Sprint Summary | [`burndown_charts/Sprint_Summary.png`](burndown_charts/Sprint_Summary.png) |
 | Burndown Chart Data | [`burndown_charts`](burndown_charts/) |
 
 ---
