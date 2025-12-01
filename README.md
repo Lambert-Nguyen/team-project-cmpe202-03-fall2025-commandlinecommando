@@ -19,7 +19,7 @@ A campus marketplace for SJSU students to buy and sell items such as textbooks, 
 
 ## Project Links
 
-- **Project Journal:** [GitHub Wiki]([https://github.com/your-repo/wiki](https://github.com/gopinathsjsu/team-project-cmpe202-03-fall2025-commandlinecommando/tree/main/project-journal)) *(Update with actual link)*
+- **Project Journal:** [project-journal](https://github.com/gopinathsjsu/team-project-cmpe202-03-fall2025-commandlinecommando/tree/main/project-journal) *
 
 ---
 
