@@ -19,6 +19,7 @@ Backend services bootstrapped, search requirements gathered, and UI/backend alig
 
 ## Vineet
 ### Completed
+- Tested endpoints using postman with postgres and h2 datbase for authentication and authorization
 - Set up VPC and EC2 networking  
 - Docker sample app deployed locally  
 ### Next

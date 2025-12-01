@@ -19,6 +19,7 @@ API integration planning took place, search feature brainstorming done, and earl
 ## Vineet
 ### Completed
 - First backend deployment test on EC2 successful  
+- Panned with Sakshat and Lam on how we can plan integration of backend with frontend
 ### Next
 - Deploy Postgres container  
 ### Blocked

@@ -20,7 +20,8 @@ Search/discovery demo completed and final sprint started.
 
 ## Vineet
 ### Completed
-- Reviewed deadlines and sprint roadmap  
+- Reviewed deadlines and sprint roadmap
+- Remind and helped teammates of deadlines before the demo 
 ### Next
 - Prepare Forcheck demo  
 ### Blocked

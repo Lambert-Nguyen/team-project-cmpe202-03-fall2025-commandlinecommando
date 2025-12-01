@@ -23,9 +23,10 @@ Build fixed, ChatGPT search feature implemented, Jira reports completed, UI + ba
 
 ## Vineet
 ### Completed
-- Implemented ChatGPT-based search assistant  
-- Coordinated grading and sprint documentation  
-- Helped prepare demo script  
+- Implemented ChatGPT-based search assistant feature for marketplace
+- Coordinated grading and sprint documentation with teammates
+- Helped prepare demo with teammates
+- Fully deployed application on AWS as per planned architecture
 ### Next
 - Polish AI search response formatting  
 ### Blocked

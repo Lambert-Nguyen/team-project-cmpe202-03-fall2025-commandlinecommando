@@ -20,7 +20,8 @@ User management progressed, listing APIs 70–80 percent complete, and UI nearly
 
 ## Vineet
 ### Completed
-- AWS infra setup  
+- Basic AWS infra setup for backend container along with ALB
+- Setting up email server with domain for notification of messages and listings
 ### Next
 - Present hosting options  
 ### Blocked

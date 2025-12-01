@@ -20,7 +20,8 @@ Team confirmed the “Campus Marketplace” idea. Repo and Jira were created, in
 ## Vineet
 ### Completed
 - Created GitHub repo and branch structure  
-- Set up Jira Epics and Stories  
+- Set up Jira Epics and Stories
+- Planned base design for backend authentication and authorization module with UML diagrams
 ### Next
 - Explore cloud hosting options  
 ### Blocked

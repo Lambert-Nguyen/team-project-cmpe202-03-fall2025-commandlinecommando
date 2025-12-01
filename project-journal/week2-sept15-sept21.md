@@ -21,8 +21,10 @@ API contracts drafted, initial backend structure created, schema aligned, and UI
 ### Completed
 - Set up AWS EC2 test instance  
 - Started IAM configuration  
+- Developed Authentication and Authorization backend base code with login and registration endpoints
 ### Next
 - Explore DB hosting strategy  
+- Testing endpoints using Postman
 ### Blocked
 - AWS IAM verification email delay
 

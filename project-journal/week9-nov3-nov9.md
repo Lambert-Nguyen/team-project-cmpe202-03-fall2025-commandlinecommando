@@ -20,7 +20,7 @@ Search feature migrated, user management completed, and API integration progress
 
 ## Vineet
 ### Completed
-- Updated AWS infra with new backend  
+- Updated AWS infra with new backend which includes redis, postgres, backend and basic frontend microservices
 ### Next
 - Provide endpoints to UI team  
 ### Blocked

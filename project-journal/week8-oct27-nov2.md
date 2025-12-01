@@ -20,7 +20,8 @@ User management simplified using dummy data, UI pages advancing, and sprint clos
 
 ## Vineet
 ### Completed
-- Deployed DB + backend containers  
+- Deployed DB + backend containers on AWS
+- planned to develop docker compose file for faster deployment strategies
 ### Next
 - Provide VM access  
 ### Blocked

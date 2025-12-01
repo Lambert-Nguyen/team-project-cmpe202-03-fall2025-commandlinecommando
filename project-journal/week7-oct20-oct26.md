@@ -20,7 +20,8 @@ Schema updates completed, AWS backend almost ready, web pages developing well, a
 
 ## Vineet
 ### Completed
-- AWS backend endpoints almost prepared  
+- Setting up AWS S3 and planned its design for integration in code
+- AWS backend endpoints almost prepared
 ### Next
 - Share AWS details with team  
 ### Blocked

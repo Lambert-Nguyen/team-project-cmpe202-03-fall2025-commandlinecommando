@@ -19,6 +19,8 @@ API structure solidified, UI mock integration progressed, and Sprint 2 completed
 ## Vineet
 ### Completed
 - Dockerized backend  
+- explore on how to integrate different microservice between multiple containers
+- Worked on creating seed data and sql schema file for the database
 ### Next
 - Deploy containerized backend to EC2  
 ### Blocked

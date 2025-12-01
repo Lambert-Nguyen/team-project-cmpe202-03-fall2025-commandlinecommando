@@ -20,7 +20,8 @@ Search demos completed, sprint closing activities started, and team prepared for
 
 ## Vineet
 ### Completed
-- Planned final sprint  
+- Completed the developement of image uploading feature on listings using Amazon S3 service
+- Planned final sprint with teammates what needs to be finalized before demo
 ### Next
 - Oversee demo-related tasks  
 ### Blocked
